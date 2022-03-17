@@ -2,7 +2,7 @@
 description: Computer Science H446-03
 ---
 
-# Some Generic Project
+# Pain and Suffering
 
 |                  |                  |
 | ---------------- | ---------------- |
