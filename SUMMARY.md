@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Pain and Suffering](README.md)
+* [The art of the game.](README.md)
 
 ## 1 Analysis <a href="#analysis" id="analysis"></a>
 
