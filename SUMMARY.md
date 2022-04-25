@@ -1,6 +1,6 @@
 # Table of contents
 
-* [The art of the game.](README.md)
+* [Video games, Mental Health and Art.](README.md)
 
 ## 1 Analysis <a href="#analysis" id="analysis"></a>
 
