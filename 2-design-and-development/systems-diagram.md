@@ -1,10 +1,8 @@
 # 2.1 Design Frame
 
+![](<../.gitbook/assets/image (6).png>)
 
-
-## Systems Diagram
-
-This diagram shows the different parts of the game that I will focus on creating. I have split each section into smaller sub-sections. Throughout the development stage, I will pick one or two of these sections to focus on at a time to gradually build up and piece together the game. I have broken the project down this way as it roughly corresponds to the success criteria.
+In the diagram above, each section of my game is split into the sections I will work on. Each section has sub-sections, based off of the features presented in [my success criteria](../1-analysis/1.5-success-criteria.md).&#x20;
 
 ## Usability Features
 
