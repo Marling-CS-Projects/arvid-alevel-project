@@ -1,16 +1,16 @@
 # 2.1 Design Frame
 
-![](<../.gitbook/assets/image (6).png>)
+![](<../.gitbook/assets/image (5).png>)
 
 In the diagram above, each section of my game is split into the sections I will work on. Each section has sub-sections, based off of the features presented in [my success criteria](../1-analysis/1.5-success-criteria.md).&#x20;
 
 ## Usability Features
 
-Usability is an important aspect to my game as I want it to be accessible to all. There are 5 key points of usability to create the best user experience that I will be focusing on when developing my project. These are:
+Usability Features are features aimed at increasing the accessibility of my game to as many users as possible, and improve the quality of play. Some of a key aspects are as follows:
 
 ### Effective
 
-Users can achieve the goal with completeness and accuracy. To do this, I will make it easy for the players to realise that they need to reach a goal in order to complete a level. I will make this goal clear to see so there is no confusion over where the players need to go.
+For my game to be considered effective, players should be able to clearly see where they are able to go, where all hazards are, and easily get a clear idea of how movement and combat is done. Clarity in this way ensures a better experience for all players, as more time is spent playing than being confused.
 
 #### Aims
 
