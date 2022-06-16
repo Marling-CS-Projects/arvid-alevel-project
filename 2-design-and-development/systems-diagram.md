@@ -14,45 +14,47 @@ For my game to be considered effective, players should be able to clearly see wh
 
 #### Aims
 
-* Create a clear goal to reach to determine the end of a level
-* Create a clear goal for any multiplayer modes
+* The game clearly shows the level's terrain and hazards
+* The game has some sort of tutorial to show how the combat/movement works
 
 ### Efficiency
 
-The speed and accuracy to which a user can complete the goal. To do this, I will create a menu system which is easy to navigate through in order for to find what you are looking for. The information which is more important can be found with less clicks.
+Efficiency can be defined as the speed, ease, and accuracy with which a player can complete a task. The fewer things must be done on the player's behalf to get an action done, the more efficient the system is. For this reason, menus will be clear and controls will be the least keys possible whilst still allowing for simplicity.&#x20;
 
 #### Aims
 
-* Create a menu system that is quick and easy to navigate through
-* Create a controls system that isn't too complicated but allows the player to do multiple actions
+* A control system that uses as few keys as possible whilst not using inputs that are too complex
+* Easy to navigate menu with a clear design
 
 ### Engaging
 
-The solution is engaging for the user to use. To do this, I will create 5 levels and an online multiplayer mode to keep the players engaged and allow them to have fun while playing the game. Using vector style art will also make the game nicer to look at than blocks, so will draw more people in, keeping them engaged.
+The game is engaging for the players. In other words, the game is fun to play. I will have multiple ways for the player to achieve in game things such as combat and movement, which means there will be gameplay variety and choice for the player which should decrease any repetitive feeling the game has, and hence increase enjoyment.
 
 #### Aims
 
-* Create a series of levels to work through
-* Create a multiplayer mode to play
-* Incorporate a style of game art the suits the game
+* Have multiple weapons for combat
+* Each part of the level has multiple ways the player could traverse it
+* Movement and combat are intuitive in the ways they interact
 
 ### Error Tolerant
 
-The solution should have as few errors as possible and if one does occur, it should be able to correct itself. To do this, I will write my code to manage as many different game scenarios as possible so that it will not crash when someone is playing it.
+The game should be free of any errors that may affect a user's experience, and be resilient to strange scenarios that may not be easy to predict. It should be able to correct any bugs it has and be constructed in such a way that it does not break when an unintended action is taken.
 
 #### Aims
 
 * The game doesn't crash
 * The game does not contain any bugs that damage the user experience
+* The game tolerant to strange interaction that tests may not have accounted for, that the player invented
 
 ### Easy To Learn
 
-The solution should be easy to use and not be over complicated. To do this, I will create simple controls for the game. I will make sure that no more controls are added than are needed in order to keep them as simple as possible for the players.
+The game should have very basic controls and interactions to learn, but allow for complexity in interaction and depth for the player once they get to grips with the basics. Both the simple and in-depth interactions should be easy to understand and not require complicated inputs.
 
 #### Aims
 
-* Create a list of controls for the game
-* Create an in-level guide that helps players learn how to play the game
+* Easy to understand control system
+* Clear and easy to interpret interactions between more complicated actions
+* Basic tutorial for the actions and controls
 
 ## Pseudocode for the Game
 
@@ -67,6 +69,7 @@ object Game
     width: width
     height: height
     physics: set up for physics
+    physics2: set up more physics
     scenes: add all menus, levels and other scenes
 end object
 
@@ -89,7 +92,6 @@ class Level extends Phaser Scene
         draw background
         create players
         create platforms
-        create puzzle elements
         create enemies
         create obstacles
         create finishing position
@@ -101,7 +103,7 @@ class Level extends Phaser Scene
         move player
         move interactable objects
         update animations
-        check if player at exit
+        check if player is at screen edge
     end procedure
     
 end class
