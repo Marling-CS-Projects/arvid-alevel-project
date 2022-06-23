@@ -6,10 +6,10 @@
 
 I plan to create a webpage using html and javascript to host the game. I have tested several libraries for purpose of creation of the game, and Phaser seems like it will be the most appropriate for my game because it has support for matter.js, a library focused on physics. On the webpage, use phaser to make a character and have it fall from where it's created onto a platform.
 
-* [ ] Make a html/javascript project
-* [ ] Create a webpage using node and express
-* [ ] Have it redirect automatically redirect to a page with Phaser
-* [ ] Create an object to represent the player and have it fall onto a platform
+* [x] Make a html/javascript project
+* [x] Create a webpage using node and express
+* [x] Have it redirect automatically redirect to a page with Phaser
+* [x] Create an object to represent the player and have it fall onto a platform
 
 ### Usability Features
 
@@ -18,19 +18,34 @@ I plan to create a webpage using html and javascript to host the game. I have te
 
 ### Key Variables
 
-| Variable Name | Use |
-| ------------- | --- |
-|               |     |
+| Variable Name | Use                                                             |
+| ------------- | --------------------------------------------------------------- |
+| preload       | a function that initialises the sprites/images for game objects |
+| create        | a function that initialises variables                           |
+| ground        | stores position, size and physics of the ground                 |
+| player        | stores position, size and physics of the player                 |
+| background    | it's just the background image                                  |
 
 ### Pseudocode
 
 ```
-lorem ipsum
+procedure preload
+    ground = ground.png
+    background = background.png
+    player = player.png
+end procedure
+
+procedure create
+    player = create rectangle (position, physics and scaling)
+    ground = create rectangle (position, scaling and physics)
+end procedure
 ```
 
 ## Development
 
 ### Outcome
+
+I have gotten my server.js to automatically redirect to game.html. Within game.html, I have an object called config which sets the size of the game window and sets up basic physics such as gravity. Under preload, I have just defined&#x20;
 
 ### Challenges
 
