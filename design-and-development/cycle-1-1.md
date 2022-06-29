@@ -55,11 +55,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a dolor risus. Su
 
 ### Tests
 
-| Test | Instructions                              | What I expect                                                                                 | What actually happens | Pass/Fail |
-| ---- | ----------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------- | --------- |
-| 1    | Run the code                              | A node console should appear with information about the server                                | As Expected           | Pass      |
-| 2    | Connect to the server with localhost:8081 | A black screen with a platform and player, which should fall onto the platform and stay there | As Expected           | Pass      |
+| Test | Instructions | What I expect | What actually happens | Pass/Fail |
+| ---- | ------------ | ------------- | --------------------- | --------- |
+| 1    | Run the code |               |                       |           |
 
 ### Evidence
-
-![](<../.gitbook/assets/image (3).png>)
