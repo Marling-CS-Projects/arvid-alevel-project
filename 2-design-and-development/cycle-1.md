@@ -25,10 +25,18 @@ I plan to create a webpage using html and javascript to host the game. I have te
 | ground        | stores position, size and physics of the ground                 |
 | player        | stores position, size and physics of the player                 |
 | background    | it's just the background image                                  |
+| config        | sets up values for the game, including the types of physics     |
 
 ### Pseudocode
 
 ```
+object config
+    height: 600
+    width: 800
+    physics: gravity
+    scene: use create and update procedures
+end object
+
 procedure preload
     ground = ground.png
     background = background.png
@@ -38,6 +46,9 @@ end procedure
 procedure create
     player = create rectangle (position, physics and image scaling)
     ground = create rectangle (position, image scaling and physics)
+    
+    set collisions between player and the ground
+
 end procedure
 ```
 
@@ -156,7 +167,7 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-Learning how express used files was a bit challenging when trying to load images. Originally in lines 52 to 54 of game.html, I misunderstood how the node server would read files, and hence the program was looking in the assets folder for the images, which, as far as it was concerned, didn't exist.
+Learning how express used files was a bit challenging when trying to load images. Originally in lines 52 to 54 of game.html, I misunderstood how the node server would read files, and hence the program was looking in the assets folder for the images, which, as far as it was concerned, didn't exist. Furthermore, I initially failed to provide a source for the html file, meaning functions such as Phaser.Game (line 49) were not understood by the code.
 
 ## Testing
 
