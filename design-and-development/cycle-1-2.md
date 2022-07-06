@@ -6,7 +6,9 @@
 
 
 
-*
+* [ ] Make a functioning acceleration system
+* [ ] Deceleration should come automatically
+* [ ] Make it a function so that it can be used for other movement mechanics
 
 ### Usability Features
 
@@ -14,20 +16,81 @@
 
 ### Key Variables
 
-| Variable Name | Use |
-| ------------- | --- |
-|               |     |
+| Variable Name | Use                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| finalVel      | the velocity being calculated and the velocity the player will move at by the end of the frame |
+| initialVel    | the velocity at the start of the frame                                                         |
+| drivingForce  | the force applied to the player to get them to move                                            |
+| resForce      | the frictional force which acts against the driving force                                      |
+| playerMass    | a constant of player mass                                                                      |
+| cal(n)        | calculation variables                                                                          |
+| rightFacing   | determines weather or not the player is facing right                                           |
+| isGrounded    | determines if the player is touching ground                                                    |
+| canRun        | is the player able to run                                                                      |
 
 ### Pseudocode
 
 ```
+object config
+    height: 600
+    width: 800
+    physics: gravity
+    scene: use create and update procedures
+    scale: center game window, scale to fit
+end object
+
+procedure preload
+    ground = ground.png
+    background = background.png
+    player = player.png
+end procedure
+
+procedure create
+    player = create rectangle (position, physics and image scaling)
+    ground = create rectangle (position, image scaling and physics)
+    
+    set collisions between player and the ground
+    set collisions between player and the edge of the window
+    
+    if player is touching ground
+        isGrounded = true
+    end if
+    
+    inputKeys = keybind setup
+
+end procedure
+
+procedure update
+    if isGrounded = true
+        canRun = true
+        if inputKeys.left is down and canRun = true
+            drivingForce = negative
+            resForce = negative
+            finalVel = velocity calculation
+            move player finalVel
+        elif inputKeys.right is down and canRun = true
+            drivingForce = positive
+            resForce = positive
+            finalVel = velocity calculation
+            move player finalVel
+        elif finalVel > 0
+            drivingForce = 0
+            resForce = resForce
+            finalVel = velocity calculation
+            move player finalVel
+        else
+            move player 0
+            resForce = 0
+        end if
+    end if
+end procedure
 ```
 
 ## Development
 
 ### Outcome
 
-The player still spawns from the same position and collides with the ground. I have created larger ground for the purpose of testing the movement. The keys were assigned using phaser's inbuilt system, as was the scaling. Collision detection was implemented in this step so that the acceleration was compatible with the system I wanted to use for deceleration and jumping in the future, in hopes of minimising errors and edits in the future. I decided to have components of the speed the player can travel at held as separate values for similar reasons as the collision detection: by implementing it this way, I can ensure deceleration, turning and interactions with speed boosts/dashes/slides (should I choose to implement them) will require less editing, and acceleration will already work with them. The server required no changes, and the html just had a favicon added.
+I split the calculation for velocity into several parts to ensure it was carried out correctly. These were stored as the variables cal'n', with n referring to a number to distinguish the calculations from each other. The&#x20;
 
 {% tabs %}
 {% tab title="server.js" %}
