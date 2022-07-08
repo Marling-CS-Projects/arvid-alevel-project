@@ -6,7 +6,7 @@
 
 * [x] Make a functioning acceleration system
 * [x] Deceleration should come automatically
-* [ ] The maximum velocity should come automatically
+* [ ] Velocity should be self limiting
 
 ### Usability Features
 
@@ -225,7 +225,7 @@ var server = app.listen(8081, function () {
 
         function update() {
             text.setText([
-                'x pos: ' + player.x,
+                'x pos: ' + player.x, //debug text. tells location of player and their velocity
                 'vel: ' + finalVel
             ]);
 
@@ -237,18 +237,21 @@ var server = app.listen(8081, function () {
                     resForce = 30;
                     rightFacing = false;
 
-                    cal1 = drivingForce * Math.abs(initialVel);
-                    cal2 = resForce * Math.abs(initialVel);
-                    cal3 = cal1 - cal2;
+                    cal1 = drivingForce * initialVel;
+                    cal2 = resForce * initialVel;
+                    cal3 = cal1 - cal2; //calculate overall force
                     cal4 = cal3 / playerMass;
-                    cal5 = Math.pow(initialVel, 2);
-                    cal6 = cal5 + cal4 + cal4;
-                    if (cal6 < 0) { finalVel = -Math.sqrt(-cal6); }
+                    cal5 = Math.pow(initialVel, 2); //initial velocity ^2
+                    cal6 = cal5 + cal4 + cal4; //initial velocity + 2 force/mass
+                    if (cal6 < 0) { finalVel = -Math.sqrt(-cal6); } /* This was useful for vecor quantities but has
+                     no effect on the currecnt implementation */
                     else if (cal6 > 0) { finalVel = Math.sqrt(cal6); }
                     else { finalVel = 0; }
                     initialVel = finalVel;
 
-                    player.setVelocityX(-finalVel);
+                    player.setVelocityX(-finalVel); /* Vel is meant to be a vector quantity, however
+                     due to errors with calculations of negative quantities, this a a temporary workaround to keep
+                     values positive. */
                 }
                 else if (canRun == true && inputKeys.right.isDown) {
                     drivingForce = 50;
@@ -285,7 +288,7 @@ var server = app.listen(8081, function () {
                     initialVel = finalVel;
 
                     if (rightFacing == true) { player.setVelocityX(finalVel); }
-                    else { player.setVelocityX(-finalVel); }
+                    else { player.setVelocityX(-finalVel); } //more temporary workarounds for the lack of vectors
                     
                 }
 
@@ -308,13 +311,23 @@ var server = app.listen(8081, function () {
 
 While this is meant to calculate a vector quantity, having both direction and magnitude, I had to use a workaround and always calculate a positive value, because the use of negative values with the Math.sqrt method would return NaN (not a number). The other huge issue I seek to address is the limitless acceleration: the equation I used is meant to limit acceleration as the 2 simulated forces acting on the object equal each other, however I have not implemented a function that changes the frictional force with velocity so the velocity increases to no limit.
 
+The calculation for acceleration also is not a function yet, so for ease of use I will turn it into one as well as add the friction calculation and vector quantities for the velocity.
+
 ## Testing
 
 ### Tests
 
-| Test | Instructions   | What I expect                                                           | What actually happens | Pass/Fail |
-| ---- | -------------- | ----------------------------------------------------------------------- | --------------------- | --------- |
-| 1    | Run the code   | A white rectangle falls onto some grey platforms on a black background. | As expected           | Pass      |
-| 2    | Tap arrow keys | The player moves slightly in the direction of the pressed key           | As expected           | Pass      |
+| Test | Instructions                         | What I expect                                                                                                        | What actually happens                                                    | Pass/Fail |
+| ---- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | --------- |
+| 1    | Run the code                         | A white rectangle falls onto some grey platforms on a black background.                                              | As expected                                                              | Pass      |
+| 2    | Tap arrow keys                       | The player moves slightly in the direction of the pressed key                                                        | As expected                                                              | Pass      |
+| 3    | Hold arrow key and release           | The player should accelerate then decelerate and stop                                                                | As expected                                                              | Pass      |
+| 4    | Hold arrow keys and keep holding     | The player should accelerate to a point, and then keep moving at a constant velocity                                 | The player accelerates and keeps accelerating at a constant rate         | Fail      |
+| 5    | Hold arrow keys and change direction | Player should accelerate to a point, then decelerate before accelerating again when turning, with a maximum velocity | The player turns with no delay and keeps accelerating at a constant rate | Fail      |
+| 6    | Hold arrow keys when in air          | Player should not move                                                                                               | As expected                                                              | Pass      |
 
 ### Evidence
+
+![](<../.gitbook/assets/image (6).png>)
+
+The velocity displayed is far too high, and keeps increasing.
