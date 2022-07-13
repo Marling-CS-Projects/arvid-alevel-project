@@ -56,7 +56,7 @@ procedure update
         canRun = true
         if inputKeys.left is down and canRun = true
             drivingForce = negative
-            resForce = negative
+            resForce = finalVel / calculation
             finalVel = velocity calculation
             move player finalVel
         elif inputKeys.right is down and canRun = true
@@ -154,23 +154,29 @@ var server = app.listen(8081, function () {
 
         //values for acceleration
         var finalVel;
-        var initialVel = 10;
+        var initialVel;
+        var distance = Math.abs(initialVel);
         var playerMass = 2;
         var drivingForce;
         var resForce;
-
-        var cal1;
-        var cal2;
-        var cal3;
-        var cal4;
-        var cal5;
-        var cal6;
         
         var isGrounded = false;
         var canRun = false;
-        var rightFacing = true;
 
         var game = new Phaser.Game(config);
+
+        function velCalc(u, s, Fd, Fr, m) {
+            cal1 = Fd * s;
+            cal2 = Fr * s;
+            cal3 = cal1 - cal2;
+            cal4 = cal3 / m;
+            cal5 = Math.pow(u, 2);
+            cal6 = cal5 + cal4 + cal4;
+            if (cal6 < 0) { v = -Math.sqrt(Math.abs(cal6)); }
+            else if (cal6 > 0) { v = Math.sqrt(cal6); }
+            else{ v = 0; }
+            return v;
+        }
 
         function preload() {
             this.load.image('background', '/background.png');
@@ -180,7 +186,6 @@ var server = app.listen(8081, function () {
 
         function create() {
             text = this.add.text(10, 10, '', { font: '16px Courier', fill: '#00ff00' });
-
 
             //Background
             this.add.image(400, 300, 'background');
@@ -196,7 +201,7 @@ var server = app.listen(8081, function () {
             ground.create(784, 584, 'ground').setScale(2).refreshBody();
 
             //Player settings
-            player = this.physics.add.image(400, 170, 'player');
+            player = this.physics.add.image(400, 170, 'player').setScale(0.5);
 
             //This makes sure the player doesn't run off screen. This is only temporary for testing purposes.
             player.setCollideWorldBounds(true);
@@ -208,86 +213,60 @@ var server = app.listen(8081, function () {
                     if (_player.body.touching.down && _ground.body.touching.up) {
                         isGrounded = true;
                     }
+                    else { isGrounded = false; }
 
                 });
-
-            this.physics.add.collider(player, ground);
 
             inputKeys = this.input.keyboard.createCursorKeys();
         }
 
         function update() {
+
+            if (finalVel != 0) { initialVel = finalVel; }
+            else { initialVel = 10; }
+
             text.setText([
                 'x pos: ' + player.x, //debug text. tells location of player and their velocity
-                'vel: ' + finalVel
+                'finVel: ' + finalVel,
+                'initVel: ' + initialVel,
+                'Grounded: ' + isGrounded,
+                'resistance: ' + resForce,
+                'driving: ' + drivingForce,
+                'v: ' + velCalc(initialVel, distance, drivingForce, resForce, playerMass)
             ]);
 
-            if (isGrounded == true) {
+            if (isGrounded) {
                 canRun = true;
 
-                if (canRun == true && inputKeys.left.isDown) {
-                    drivingForce = 50;
-                    resForce = 30;
-                    rightFacing = false;
+                if (canRun && inputKeys.left.isDown) {
+                    drivingForce = -500;
+                    resForce = (0.3 * (-Math.pow(Math.abs(finalVel), 2) / 2));
 
-                    cal1 = drivingForce * initialVel;
-                    cal2 = resForce * initialVel;
-                    cal3 = cal1 - cal2; //calculate overall force
-                    cal4 = cal3 / playerMass;
-                    cal5 = Math.pow(initialVel, 2); //initial velocity ^2
-                    cal6 = cal5 + cal4 + cal4; //initial velocity + 2 force/mass
-                    if (cal6 < 0) { finalVel = -Math.sqrt(-cal6); } /* This was useful for vecor quantities but has
-                     no effect on the currecnt implementation */
-                    else if (cal6 > 0) { finalVel = Math.sqrt(cal6); }
-                    else { finalVel = 0; }
-                    initialVel = finalVel;
+                    finalVel = -10 + velCalc(initialVel, distance, drivingForce, resForce, playerMass);
 
-                    player.setVelocityX(-finalVel); /* Vel is meant to be a vector quantity, however
-                     due to errors with calculations of negative quantities, this a a temporary workaround to keep
-                     values positive. */
+                    player.setVelocityX(finalVel);
                 }
-                else if (canRun == true && inputKeys.right.isDown) {
-                    drivingForce = 50;
-                    resForce = 30;
-                    rightFacing = true;
+                else if (canRun && inputKeys.right.isDown) {
+                    drivingForce = 500;
+                    resForce = (0.3 * (Math.pow(Math.abs(finalVel), 2) / 2));
 
-                    cal1 = drivingForce * initialVel;
-                    cal2 = resForce * initialVel;
-                    cal3 = cal1 - cal2;
-                    cal4 = cal3 / playerMass;
-                    cal5 = Math.pow(initialVel, 2);
-                    cal6 = cal5 + cal4 + cal4;
-                    if (cal6 < 0) { finalVel = -Math.sqrt(-cal6); }
-                    else if (cal6 > 0) { finalVel = Math.sqrt(cal6); }
-                    else { finalVel = 0; }
-                    initialVel = finalVel;
+                    finalVel = 10 + velCalc(initialVel, distance, drivingForce, resForce, playerMass);
 
                     player.setVelocityX(finalVel);
                 }
 
-                else if (isGrounded == true && finalVel > 0) {
+                else if (isGrounded && Math.abs(finalVel) != 0) {
                     drivingForce = 0;
-                    resForce = 30;
+                    resForce = (0.3 * (Math.pow(Math.abs(finalVel), 2) / 2));
 
-                    cal1 = drivingForce * initialVel;
-                    cal2 = resForce * initialVel;
-                    cal3 = cal1 - cal2;
-                    cal4 = cal3 / playerMass;
-                    cal5 = Math.pow(initialVel, 2);
-                    cal6 = cal5 + cal4 + cal4;
-                    if (cal6 < 0) { finalVel = -Math.sqrt(-cal6); }
-                    else if (cal6 > 0) { finalVel = Math.sqrt(cal6); }
-                    else { finalVel = 0; }
-                    initialVel = finalVel;
+                    finalVel = velCalc(initialVel, distance, drivingForce, resForce, playerMass);
 
-                    if (rightFacing == true) { player.setVelocityX(finalVel); }
-                    else { player.setVelocityX(-finalVel); } //more temporary workarounds for the lack of vectors
-                    
+                    player.setVelocityX(finalVel);
+
                 }
 
                 else {
                     player.setVelocityX(0);
-                    initialVel = 10;
                 }
             }
         }
