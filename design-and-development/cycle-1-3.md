@@ -5,9 +5,9 @@
 ### Objectives
 
 * [ ] Make the calculation for velocity a function
-* [ ] Make the resisting forces rely on velocity
-* [ ] Ensure the velocity is self limiting
-* [ ] Make the velocity and movement function with vector quantities
+* [x] Make the resisting forces rely on velocity
+* [x] Ensure the velocity is self limiting
+* [x] Make the velocity and movement function with vector quantities
 
 ### Usability Features
 
@@ -15,9 +15,18 @@
 
 ### Key Variables
 
-| Variable Name | Use |
-| ------------- | --- |
-|               |     |
+no new variables
+
+| Variable Name | Use                                                            |
+| ------------- | -------------------------------------------------------------- |
+| finalVel      | final velocity and ultimately the velocity the player moves at |
+| initialVel    | the velocity of the last frame of movement                     |
+| resForce      |                                                                |
+| drivingForce  |                                                                |
+| isGrounded    |                                                                |
+| canRun        |                                                                |
+| playerMass    |                                                                |
+| caln          |                                                                |
 
 ### Pseudocode
 
@@ -56,19 +65,18 @@ procedure update
         canRun = true
         if inputKeys.left is down and canRun = true
             drivingForce = negative
-            resForce = finalVel / calculation
-            finalVel = velocity calculation
-            move player finalVel
+            resForce = -1 * (velocity / 2)
+            velocity = -1 * calculations
+            move player velocity
         elif inputKeys.right is down and canRun = true
             drivingForce = positive
-            resForce = positive
-            finalVel = velocity calculation
-            move player finalVel
+            resForce = velocity / 2
+            velocity = calculations
+            move player velocity
         elif finalVel > 0
             drivingForce = 0
-            resForce = resForce
-            finalVel = velocity calculation
-            move player finalVel
+            resForce = velocity / 2
+            velocity = calculations
         else
             move player 0
             resForce = 0
@@ -153,30 +161,23 @@ var server = app.listen(8081, function () {
         var inputKeys;
 
         //values for acceleration
-        var finalVel;
-        var initialVel;
-        var distance = Math.abs(initialVel);
+        var finalVel = 0;
+        var initialVel = 0;
         var playerMass = 2;
-        var drivingForce;
-        var resForce;
+        var drivingForce = 0;
+        var resForce = 0;
+
+        var cal1 = 0;
+        var cal2 = 0;
+        var cal3 = 0;
+        var cal4 = 0;
+        var cal5 = 0;
+        var cal6 = 0;
         
         var isGrounded = false;
         var canRun = false;
 
         var game = new Phaser.Game(config);
-
-        function velCalc(u, s, Fd, Fr, m) {
-            cal1 = Fd * s;
-            cal2 = Fr * s;
-            cal3 = cal1 - cal2;
-            cal4 = cal3 / m;
-            cal5 = Math.pow(u, 2);
-            cal6 = cal5 + cal4 + cal4;
-            if (cal6 < 0) { v = -Math.sqrt(Math.abs(cal6)); }
-            else if (cal6 > 0) { v = Math.sqrt(cal6); }
-            else{ v = 0; }
-            return v;
-        }
 
         function preload() {
             this.load.image('background', '/background.png');
@@ -222,8 +223,7 @@ var server = app.listen(8081, function () {
 
         function update() {
 
-            if (finalVel != 0) { initialVel = finalVel; }
-            else { initialVel = 10; }
+            initialVel = finalVel;
 
             text.setText([
                 'x pos: ' + player.x, //debug text. tells location of player and their velocity
@@ -232,34 +232,66 @@ var server = app.listen(8081, function () {
                 'Grounded: ' + isGrounded,
                 'resistance: ' + resForce,
                 'driving: ' + drivingForce,
-                'v: ' + velCalc(initialVel, distance, drivingForce, resForce, playerMass)
             ]);
 
             if (isGrounded) {
                 canRun = true;
 
                 if (canRun && inputKeys.left.isDown) {
-                    drivingForce = -500;
-                    resForce = (0.3 * (-Math.pow(Math.abs(finalVel), 2) / 2));
+                    drivingForce = -50;
+                    resForce = (-Math.pow(Math.abs(finalVel), 2) / 2);
 
-                    finalVel = -10 + velCalc(initialVel, distance, drivingForce, resForce, playerMass);
+                    cal1 = drivingForce * Math.abs(initialVel); //Fds
+                    cal2 = resForce * Math.abs(initialVel); //Frs
+                    cal3 = cal1 - cal2; //Total Force
+                    cal4 = cal3 / playerMass; //as
+                    cal5 = Math.pow(initialVel, 2); //u^2
+                    cal6 = cal5 + cal4 + cal4; //u^2 + 2as
+                    finalVel = parseInt(-1 + -Math.sqrt(Math.abs(cal6)));
 
                     player.setVelocityX(finalVel);
                 }
                 else if (canRun && inputKeys.right.isDown) {
-                    drivingForce = 500;
-                    resForce = (0.3 * (Math.pow(Math.abs(finalVel), 2) / 2));
+                    drivingForce = 50;
+                    resForce = (Math.pow(Math.abs(finalVel), 2) / 2);
 
-                    finalVel = 10 + velCalc(initialVel, distance, drivingForce, resForce, playerMass);
+                    cal1 = drivingForce * Math.abs(initialVel); //Fds
+                    cal2 = resForce * Math.abs(initialVel); //Frs
+                    cal3 = cal1 - cal2; //Total Force
+                    cal4 = cal3 / playerMass; //as
+                    cal5 = Math.pow(initialVel, 2); //u^2
+                    cal6 = cal5 + cal4 + cal4; //u^2 + 2as
+                    finalVel = parseInt(1 + Math.sqrt(Math.abs(cal6)));
 
                     player.setVelocityX(finalVel);
                 }
 
-                else if (isGrounded && Math.abs(finalVel) != 0) {
+                else if (isGrounded && canRun && Math.abs(finalVel) != 0) {
                     drivingForce = 0;
-                    resForce = (0.3 * (Math.pow(Math.abs(finalVel), 2) / 2));
 
-                    finalVel = velCalc(initialVel, distance, drivingForce, resForce, playerMass);
+                    if (finalVel > 0) {
+                        resForce = (Math.pow(Math.abs(finalVel), 2) / 2)
+                        cal1 = drivingForce * Math.abs(initialVel); //Fds
+                        cal2 = resForce * Math.abs(initialVel); //Frs
+                        cal3 = cal1 - cal2; //Total Force
+                        cal4 = cal3 / playerMass; //as
+                        cal5 = Math.pow(initialVel, 2); //u^2
+                        cal6 = cal5 + cal4 + cal4; //u^2 + 2as
+                        finalVel = parseInt(1 + Math.sqrt(Math.abs(cal6)));
+                    }
+                    else if (finalVel < 0) {
+                        resForce = (-Math.pow(Math.abs(finalVel), 2) / 2)
+                        cal1 = drivingForce * Math.abs(initialVel); //Fds
+                        cal2 = resForce * Math.abs(initialVel); //Frs
+                        cal3 = cal1 - cal2; //Total Force
+                        cal4 = cal3 / playerMass; //as
+                        cal5 = Math.pow(initialVel, 2); //u^2
+                        cal6 = cal5 + cal4 + cal4; //u^2 + 2as
+                        finalVel = parseInt(-1 + -Math.sqrt(Math.abs(cal6)));
+                    }
+                    else {
+                        finalVel = 0;
+                    }
 
                     player.setVelocityX(finalVel);
 
@@ -300,6 +332,6 @@ The calculation for acceleration also is not a function yet, so for ease of use 
 
 ### Evidence
 
-![](<../.gitbook/assets/image (6).png>)
+![](<../.gitbook/assets/image (5).png>)
 
 The velocity displayed is far too high, and keeps increasing.

@@ -1,6 +1,6 @@
 # 2.1 Design Frame
 
-![](<../.gitbook/assets/image (5).png>)
+![](<../.gitbook/assets/image (5) (1).png>)
 
 In the diagram above, each section of my game is split into the sections I will work on. Each section has sub-sections, based off of the features presented in [my success criteria](../1-analysis/1.5-success-criteria.md).&#x20;
 
