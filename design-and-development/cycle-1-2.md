@@ -1,4 +1,4 @@
-# 2.2.2 Cycle 2
+# 2.2.3 Cycle 2
 
 ## Design
 
@@ -328,6 +328,6 @@ The calculation for acceleration also is not a function yet, so for ease of use 
 
 ### Evidence
 
-![](<../.gitbook/assets/image (6).png>)
+![](<../.gitbook/assets/image (6) (1).png>)
 
 The velocity displayed is far too high, and keeps increasing.

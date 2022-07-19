@@ -1,13 +1,13 @@
-# 2.2.4 Cycle 3
+# 2.2.5 Cycle 4
 
 ## Design
 
 ### Objectives
 
-* [ ] Make the calculation for velocity a function
-* [x] Make the resisting forces rely on velocity
-* [x] Ensure the velocity is self limiting
-* [x] Make the velocity and movement function with vector quantities
+* [ ] Have acceleration as a result of forces acting upon the player
+* [ ] Velocity as a vector quantity
+* [ ] Acceleration and deceleration
+* [ ] Deceleration when turning
 
 ### Usability Features
 
@@ -20,13 +20,11 @@ no new variables
 | Variable Name | Use                                                            |
 | ------------- | -------------------------------------------------------------- |
 | finalVel      | final velocity and ultimately the velocity the player moves at |
-| initialVel    | the velocity of the last frame of movement                     |
 | resForce      | the modelled amount of resisting forces to the player          |
 | drivingForce  | the modelled amount of driving forces upon the player          |
 | isGrounded    | is the player touching the ground                              |
 | canRun        | determine whether the player is able to accelerate or not      |
 | playerMass    | model for the player's mass                                    |
-| caln          | calculations of velocity and acceleration                      |
 
 ### Pseudocode
 
@@ -62,25 +60,17 @@ end procedure
 
 procedure update
     if isGrounded = true
-        canRun = true
-        if inputKeys.left is down and canRun = true
+        canRun = true  
+    end if    
+    if inputKeys.left is down and canRun = true
             drivingForce = negative
-            resForce = velocity based calculation
-            velocity = -1 * calculations
-            move player velocity
+            resForce = finalVel^2 / 2
+            finalVel += (drivingForce - resForce) / 2
         elif inputKeys.right is down and canRun = true
             drivingForce = positive
-            resForce = velocity based calculation
-            velocity = calculations
-            move player velocity
-        elif finalVel > 0
-            drivingForce = 0
-            resForce = velocity based calculation
-            velocity = calculations
-        else
-            move player 0
-            resForce = 0
-        end if
+            resForce = finalVel^2 / 2
+            finalVel += (drivingForce - resForce) / 2
+        elif 
     end if
 end procedure
 ```
@@ -89,7 +79,7 @@ end procedure
 
 ### Outcome
 
-I split the calculation for velocity into several parts to ensure it was carried out correctly. These were stored as the variables cal'n', with n referring to a number to distinguish the calculations from each other. This was because using a function kept returning none and the main purpose was to ensure that resisting force could be calculated using the player's velocity. The velocity now works as a vector quantity in calculation and result.
+This method for finding the velocity using a force is based off of the work energy principal which I attempted to model in the previous examples.&#x20;
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -162,17 +152,9 @@ var server = app.listen(8081, function () {
 
         //values for acceleration
         var finalVel = 0;
-        var initialVel = 0;
         var playerMass = 2;
         var drivingForce = 0;
         var resForce = 0;
-
-        var cal1 = 0;
-        var cal2 = 0;
-        var cal3 = 0;
-        var cal4 = 0;
-        var cal5 = 0;
-        var cal6 = 0;
         
         var isGrounded = false;
         var canRun = false;
@@ -226,81 +208,36 @@ var server = app.listen(8081, function () {
             initialVel = finalVel;
 
             text.setText([
-                'x pos: ' + player.x, //debug text. tells location of player and their velocity
+                'x pos: ' + player.x, //debug text. tells location of player, velocity, etc.
                 'finVel: ' + finalVel,
-                'initVel: ' + initialVel,
-                'Grounded: ' + isGrounded,
+                'Grounded? ' + isGrounded,
                 'resistance: ' + resForce,
                 'driving: ' + drivingForce,
+                'mass: ' + playerMass
             ]);
 
             if (isGrounded) {
                 canRun = true;
-
-                if (canRun && inputKeys.left.isDown) {
-                    drivingForce = -50;
-                    resForce = (-Math.pow(Math.abs(finalVel), 2) / 2);
-
-                    cal1 = drivingForce * Math.abs(initialVel); //Fds
-                    cal2 = resForce * Math.abs(initialVel); //Frs
-                    cal3 = cal1 - cal2; //Total Force
-                    cal4 = cal3 / playerMass; //as
-                    cal5 = Math.pow(initialVel, 2); //u^2
-                    cal6 = cal5 + cal4 + cal4; //u^2 + 2as
-                    finalVel = parseInt(-1 + -Math.sqrt(Math.abs(cal6)));
-
-                    player.setVelocityX(finalVel);
-                }
-                else if (canRun && inputKeys.right.isDown) {
-                    drivingForce = 50;
-                    resForce = (Math.pow(Math.abs(finalVel), 2) / 2);
-
-                    cal1 = drivingForce * Math.abs(initialVel); //Fds
-                    cal2 = resForce * Math.abs(initialVel); //Frs
-                    cal3 = cal1 - cal2; //Total Force
-                    cal4 = cal3 / playerMass; //as
-                    cal5 = Math.pow(initialVel, 2); //u^2
-                    cal6 = cal5 + cal4 + cal4; //u^2 + 2as
-                    finalVel = parseInt(1 + Math.sqrt(Math.abs(cal6)));
-
-                    player.setVelocityX(finalVel);
-                }
-
-                else if (isGrounded && canRun && Math.abs(finalVel) != 0) {
-                    drivingForce = 0;
-
-                    if (finalVel > 0) {
-                        resForce = (Math.pow(Math.abs(finalVel), 2) / 2)
-                        cal1 = drivingForce * Math.abs(initialVel); //Fds
-                        cal2 = resForce * Math.abs(initialVel); //Frs
-                        cal3 = cal1 - cal2; //Total Force
-                        cal4 = cal3 / playerMass; //as
-                        cal5 = Math.pow(initialVel, 2); //u^2
-                        cal6 = cal5 + cal4 + cal4; //u^2 + 2as
-                        finalVel = parseInt(1 + Math.sqrt(Math.abs(cal6)));
-                    }
-                    else if (finalVel < 0) {
-                        resForce = (-Math.pow(Math.abs(finalVel), 2) / 2)
-                        cal1 = drivingForce * Math.abs(initialVel); //Fds
-                        cal2 = resForce * Math.abs(initialVel); //Frs
-                        cal3 = cal1 - cal2; //Total Force
-                        cal4 = cal3 / playerMass; //as
-                        cal5 = Math.pow(initialVel, 2); //u^2
-                        cal6 = cal5 + cal4 + cal4; //u^2 + 2as
-                        finalVel = parseInt(-1 + -Math.sqrt(Math.abs(cal6)));
-                    }
-                    else {
-                        finalVel = 0;
-                    }
-
-                    player.setVelocityX(finalVel);
-
-                }
-
-                else {
-                    player.setVelocityX(0);
-                }
             }
+
+            if (canRun && inputKeys.left.isDown) {
+                drivingForce = -70;
+            }
+            else if (canRun && inputKeys.right.isDown) {
+                drivingForce = 70;
+            }
+            else if (isGrounded && finalVel != 0) {
+                drivingForce = 0
+            }
+            else {
+                drivingForce = 0;
+                resForce = 0;
+                player.setVelocityX(0);
+                finalVel = 0;
+            }
+            resForce = 0.4 * (finalVel / 2);
+            finalVel = parseInt(finalVel + ((drivingForce - resForce) / playerMass));
+            player.setVelocityX(finalVel);
         }
 
     </script>
