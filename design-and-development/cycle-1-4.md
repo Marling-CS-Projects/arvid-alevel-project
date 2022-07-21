@@ -8,6 +8,7 @@
 * [ ] Velocity as a vector quantity
 * [ ] Acceleration and deceleration
 * [ ] Deceleration when turning
+* [ ] Acceleration after turn
 
 ### Usability Features
 
