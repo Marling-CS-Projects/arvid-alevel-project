@@ -9,6 +9,7 @@
 * [ ] Acceleration and deceleration
 * [ ] Deceleration when turning
 * [ ] Acceleration after turn
+* [ ] Add comments. Future you will like it
 
 ### Usability Features
 
@@ -18,14 +19,15 @@
 
 no new variables
 
-| Variable Name | Use                                                            |
-| ------------- | -------------------------------------------------------------- |
-| finalVel      | final velocity and ultimately the velocity the player moves at |
-| resForce      | the modelled amount of resisting forces to the player          |
-| drivingForce  | the modelled amount of driving forces upon the player          |
-| isGrounded    | is the player touching the ground                              |
-| canRun        | determine whether the player is able to accelerate or not      |
-| playerMass    | model for the player's mass                                    |
+| Variable Name     | Use                                                            |
+| ----------------- | -------------------------------------------------------------- |
+| finalVel          | final velocity and ultimately the velocity the player moves at |
+| resForce          | the modelled amount of resisting forces to the player          |
+| drivingForce      | the modelled amount of driving forces upon the player          |
+| isGrounded        | is the player touching the ground                              |
+| canRun            | determine whether the player is able to accelerate or not      |
+| playerMass        | model for the player's mass                                    |
+| turningLeft/Right | check for if the player is turning                             |
 
 ### Pseudocode
 
@@ -65,14 +67,17 @@ procedure update
     end if    
     if inputKeys.left is down and canRun = true
             drivingForce = negative
-            resForce = finalVel^2 / 2
-            finalVel += (drivingForce - resForce) / 2
+            if facingRight
+                turn
         elif inputKeys.right is down and canRun = true
             drivingForce = positive
-            resForce = finalVel^2 / 2
-            finalVel += (drivingForce - resForce) / 2
+            if facingLeft
+                turn
         elif 
     end if
+    resForce = finalVel / 2
+    finalVel += (drivingForce - resForce) / 2
+    move player finalVel
 end procedure
 ```
 
@@ -80,7 +85,7 @@ end procedure
 
 ### Outcome
 
-This method for finding the velocity using a force is based off of the work energy principal which I attempted to model in the previous examples.&#x20;
+This method for finding the velocity using a force is based off of the work energy principal which I attempted to model in the previous examples. The same benefits of implementing movement boosts such as dashes and slides still remain, but this is a far more simple implementation. The way the turn is implemented is based off of Rain World, where a small boost is gained while turning.
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -156,6 +161,8 @@ var server = app.listen(8081, function () {
         var playerMass = 2;
         var drivingForce = 0;
         var resForce = 0;
+        var turningLeft = false;
+        var turningRight = false;
         
         var isGrounded = false;
         var canRun = false;
@@ -214,7 +221,8 @@ var server = app.listen(8081, function () {
                 'Grounded? ' + isGrounded,
                 'resistance: ' + resForce,
                 'driving: ' + drivingForce,
-                'mass: ' + playerMass
+                'mass: ' + playerMass,
+                'turning? ' + 'Left: ' + turningLeft + ' Right: ' + turningRight
             ]);
 
             if (isGrounded) {
@@ -222,23 +230,61 @@ var server = app.listen(8081, function () {
             }
 
             if (canRun && inputKeys.left.isDown) {
-                drivingForce = -70;
+                if (drivingForce >= 90 && !turningLeft) {
+                    /*this checks for weather or not the player can perform a turn boost. 90 allows for input imperfections as it is one frame
+                     worth of deceleration below the top speed making it easier to perform*/
+                    turningLeft = true; //turning left and right had to be separated into 2 variable to prevent interactions between them
+                }
+                else if (drivingForce > -200 && turningLeft) {
+                    drivingForce += -20; //this makes you move faster when you're turning
+                    if (drivingForce <= -200) { //this allows a greater top speed just after turning
+                        turningLeft = false; //and once that top speed is reached, you are no longer considered to be turning
+                        drivingForce = -200;
+                    }
+                }
+                else if (drivingForce > -100 && !turningLeft) { //force is a positive or negative quantity as velocity is a vector
+                    drivingForce += -10;
+                }
+                else if (drivingForce < -100 && !turningLeft && isGrounded) {
+                    drivingForce += 10; //this checks if the player is travelling above the maximum base speed and decelerates them accordingly
+                }
             }
             else if (canRun && inputKeys.right.isDown) {
-                drivingForce = 70;
-            }
-            else if (isGrounded && finalVel != 0) {
-                drivingForce = 0
+                if (drivingForce <= -90 && !turningRight) {
+                    turningRight = true;
+                }
+                else if (drivingForce < 200 && turningRight) {
+                    drivingForce += 20;
+                    if (drivingForce >= 200) {
+                        turningRight = false;
+                        drivingForce = 200;
+                    }
+                }
+                else if (drivingForce < 100 && !turningRight) {
+                    drivingForce += 10;
+                }
+                else if (drivingForce > 100 && !turningRight && isGrounded) {
+                    drivingForce += -10;
+                }
             }
             else {
-                drivingForce = 0;
-                resForce = 0;
-                player.setVelocityX(0);
-                finalVel = 0;
+                if (drivingForce != 0) {
+                    if (drivingForce < 0) {
+                        drivingForce += 10;
+                    }
+                    else {
+                        drivingForce += -10;
+                    }
+                }
+                else {
+                    drivingForce = 0;
+                }
             }
-            resForce = 0.4 * (finalVel / 2);
+            resForce = 0.7 * (finalVel / 2); //resistance here is reliant on the velocity. Velocity is self limiting.
             finalVel = parseInt(finalVel + ((drivingForce - resForce) / playerMass));
-            player.setVelocityX(finalVel);
+            /*calculates horizontal velocity based off of the 'forces' applied. Doing it this way means dashes and extra movement boosts
+             can be implemented by saying they apply a larger force*/
+            player.setVelocityX(finalVel); //move the player
         }
 
     </script>
@@ -251,7 +297,7 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The velocity would not stop increasing once a key was held, so the resisting force was never enough. The velocity would also increase to a point then suddenly go back to 0 and loop round again, also weather or not a key was pressed. Furthermore, trying to get the function to give an output caused it to constantly return 0, which is why it was temporarily abandoned.
+The velocity would not stop increasing once a key was held, so the resisting force was never enough. The velocity would also increase to a point then suddenly go back to 0 and loop round again, also weather or not a key was pressed. Furthermore, trying to get the fun
 
 With all this trouble this implementation of acceleration has caused, I plan to partially scrap it now. I will use a similar premise but instead of simulating the real life system, just model it in a way that feels good, and more importantly, functions.
 
@@ -259,13 +305,10 @@ With all this trouble this implementation of acceleration has caused, I plan to 
 
 ### Tests
 
-| Test | Instructions                                                    | What I expect                                                                           | What actually happens                                           | Pass/Fail |
-| ---- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
-| 1    | Run the code                                                    | A white rectangle falls onto some grey platforms on a black background.                 | As expected                                                     | Pass      |
-| 2    | let the player touch the ground                                 | Is grounded should be true, the player should not do anything else.                     | As expected                                                     | Pass      |
-| 3    | tap the arrow keys in their respective directions               | The player should move in the pressed direction and stop.                               | As expected                                                     | Pass      |
-| 4    | hold then release the arrow keys in their respective directions | The player should accelerate up to a point and then decelerate when the key is released | The player keeps going. They will not stop. They cannot stop... | Fail      |
-| 5    | Key is pressed in the opposite direction when at full speed     | Should rapidly decelerate and turn in the opposite direction                            | They just turn instantly ay full speed                          | Fail      |
+| Test | Instructions                    | What I expect                                                           | What actually happens | Pass/Fail |
+| ---- | ------------------------------- | ----------------------------------------------------------------------- | --------------------- | --------- |
+| 1    | Run the code                    | A white rectangle falls onto some grey platforms on a black background. | As expected           | Pass      |
+| 2    | let the player touch the ground | Is grounded should be true, the pl                                      |                       |           |
 
 ### Evidence
 
