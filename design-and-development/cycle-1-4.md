@@ -4,12 +4,12 @@
 
 ### Objectives
 
-* [ ] Have acceleration as a result of forces acting upon the player
-* [ ] Velocity as a vector quantity
-* [ ] Acceleration and deceleration
-* [ ] Deceleration when turning
-* [ ] Acceleration after turn
-* [ ] Add comments. Future you will like it
+* [x] Have acceleration as a result of forces acting upon the player
+* [x] Velocity as a vector quantity
+* [x] Acceleration and deceleration
+* [x] Deceleration when turning
+* [x] Acceleration after turn
+* [x] Add comments. Future you will like it
 
 ### Usability Features
 
@@ -297,9 +297,7 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The velocity would not stop increasing once a key was held, so the resisting force was never enough. The velocity would also increase to a point then suddenly go back to 0 and loop round again, also weather or not a key was pressed. Furthermore, trying to get the fun
-
-With all this trouble this implementation of acceleration has caused, I plan to partially scrap it now. I will use a similar premise but instead of simulating the real life system, just model it in a way that feels good, and more importantly, functions.
+Figuring out the acceleration based off of force and calculating it as a vector wasn't too hard to do, based off of what I have learned from the previous cycles. The turn was the most difficult part of this cycle, as the way I initially implemented it didn't distinguish between the different directions to see if the player was dashing. I fixed this by using two separate variables to determine which direction the player was turning in.
 
 ## Testing
 
@@ -308,7 +306,8 @@ With all this trouble this implementation of acceleration has caused, I plan to 
 | Test | Instructions                    | What I expect                                                           | What actually happens | Pass/Fail |
 | ---- | ------------------------------- | ----------------------------------------------------------------------- | --------------------- | --------- |
 | 1    | Run the code                    | A white rectangle falls onto some grey platforms on a black background. | As expected           | Pass      |
-| 2    | let the player touch the ground | Is grounded should be true, the pl                                      |                       |           |
+| 2    | let the player touch the ground | No movement, grounded = true and canRun = true                          | As expected           | Pass      |
+| 3    |                                 |                                                                         |                       |           |
 
 ### Evidence
 
