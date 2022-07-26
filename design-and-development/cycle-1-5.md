@@ -1,20 +1,14 @@
-# 2.2.5 Cycle 4
+# 2.2.6 Cycle 5
 
 ## Design
 
 ### Objectives
 
-* [x] Have acceleration as a result of forces acting upon the player
-* [x] Velocity as a vector quantity
-* [x] Acceleration and deceleration
-* [x] Deceleration when turning
-* [x] Acceleration after turn
-* [x] Add comments. Future you will like it
+*
 
 ### Usability Features
 
 * Simplified controls - no complications yet, just very basic movement. Easy to understand, should be easy to implement.
-* Margin of Error - There is room for the player to make some mistakes, means more people are capable of using the game's features.
 
 ### Key Variables
 
