@@ -303,14 +303,16 @@ Figuring out the acceleration based off of force and calculating it as a vector 
 
 ### Tests
 
-| Test | Instructions                    | What I expect                                                           | What actually happens | Pass/Fail |
-| ---- | ------------------------------- | ----------------------------------------------------------------------- | --------------------- | --------- |
-| 1    | Run the code                    | A white rectangle falls onto some grey platforms on a black background. | As expected           | Pass      |
-| 2    | let the player touch the ground | No movement, grounded = true and canRun = true                          | As expected           | Pass      |
-| 3    |                                 |                                                                         |                       |           |
+| Test | Instructions                                                              | What I expect                                                                                                                                               | What actually happens | Pass/Fail |
+| ---- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | --------- |
+| 1    | Run the code                                                              | A white rectangle falls onto some grey platforms on a black background.                                                                                     | As expected           | Pass      |
+| 2    | let the player touch the ground                                           | No movement, grounded = true and canRun = true                                                                                                              | As expected           | Pass      |
+| 3    | Press key in either direction                                             | Player should reach a maximum velocity and accelerate gradually                                                                                             | As expected           | Pass      |
+| 4    | Release Key after allowing for full acceleration                          | Player decelerates back down to a stop                                                                                                                      | As expected           | Pass      |
+| 5    | Change the resistance multiplier to increase/decrease and repeat 3 and 4. | <p>Acceleration should decrease/increase and deceleration should increase/decrease respectively.<br>Max velocity should decrease/increase respectively.</p> | As expected           | Pass      |
+| 6    | Don't allow for full deceleration, and press opposite direction.          | Slower acceleration to the opposite direction                                                                                                               | As expected           | Pass      |
+| 7    | Turn while at the full velocity in the opposite direction                 | turnDireciton = true for the direction turned, slight acceleration and rapid deceleration after threshold                                                   | As expected           | Pass      |
 
 ### Evidence
 
-![](<../.gitbook/assets/image (6).png>)
-
-Letting go won't stop it. It keeps going in a loop in either direction.
+![](<../.gitbook/assets/image (7).png>)
