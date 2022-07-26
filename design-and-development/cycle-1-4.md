@@ -18,8 +18,6 @@
 
 ### Key Variables
 
-no new variables
-
 | Variable Name     | Use                                                            |
 | ----------------- | -------------------------------------------------------------- |
 | finalVel          | final velocity and ultimately the velocity the player moves at |
