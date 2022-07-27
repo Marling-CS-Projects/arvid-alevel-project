@@ -8,7 +8,6 @@
 * [ ] gravity should accelerate the player up to a point, but that point should be quite large
 * [ ] add a jump
 * [ ] jump should have variable height based off of how long the key is held
-* [ ] clean up horizontal movement to use less 'if' statements
 
 ### Usability Features
 
@@ -16,12 +15,12 @@
 
 ### Key Variables
 
-| Variable Name       | Use                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------- |
-| finalVerticalVel    | final vertical velocity component                                                  |
-| gravity             | gravity constant. replaces the base system of gravity in game.                     |
-| jumpForce           | the amount of force the player jumps with                                          |
-| jumpForceMultiplier | will allow for the applied force to be cut off early, hence a variable jump height |
+| Variable Name        | Use                               |
+| -------------------- | --------------------------------- |
+| finalVerticalVel     | final vertical velocity component |
+| drivingVerticalForce | driving force vertically          |
+| resVerticalForce     | resisting force vertically        |
+| playerMass           | player mass                       |
 
 ### Pseudocode
 
@@ -309,4 +308,4 @@ Figuring out the acceleration based off of force and calculating it as a vector 
 
 ### Evidence
 
-![](<../.gitbook/assets/image (7).png>)
+![](<../.gitbook/assets/image (4).png>)
