@@ -267,4 +267,4 @@ I plan to redo this movement system in the next cycle using a system with fricti
 
 ### Evidence
 
-![note: please replace this with a gif if possible](<../.gitbook/assets/image (1) (2).png>)
+![note: please replace this with a gif if possible](<../.gitbook/assets/image (1).png>)

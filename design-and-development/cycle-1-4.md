@@ -314,4 +314,4 @@ Figuring out the acceleration based off of force and calculating it as a vector 
 
 ### Evidence
 
-![](<../.gitbook/assets/image (7).png>)
+![](../.gitbook/assets/image.png)
