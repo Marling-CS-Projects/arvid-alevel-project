@@ -331,6 +331,6 @@ With all this trouble this implementation of acceleration has caused, I plan to 
 
 ### Evidence
 
-![](<../.gitbook/assets/image (6).png>)
+![](<../.gitbook/assets/image (6) (2).png>)
 
 Letting go won't stop it. It keeps going in a loop in either direction.
