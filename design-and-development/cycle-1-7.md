@@ -1,11 +1,11 @@
-# 2.2.7 Cycle 6
+# 2.2.8 Cycle 7
 
 ## Design
 
 ### Objectives
 
-* [x] make a new functional system of gravity
-* [x] remake collision detection
+* [x] make a jump
+* [x] the jump should be variable in height based off of how long a key is held
 
 ### Usability Features
 
@@ -13,12 +13,15 @@
 
 ### Key Variables
 
-| Variable Name        | Use                               |
-| -------------------- | --------------------------------- |
-| finalVerticalVel     | final vertical velocity component |
-| drivingVerticalForce | driving force vertically          |
-| resVerticalForce     | resisting force vertically        |
-| playerMass           | player mass                       |
+| Variable Name        | Use                                         |
+| -------------------- | ------------------------------------------- |
+| finalVerticalVel     | final vertical velocity component           |
+| drivingVerticalForce | driving force vertically                    |
+| resVerticalForce     | resisting force vertically                  |
+| playerMass           | player mass                                 |
+| isJumping            | checks if the player in currently in a jump |
+| hasJumped            | checks if the player has already jumped     |
+| canJump              | checks if the player is able to jump        |
 
 ### Pseudocode
 
