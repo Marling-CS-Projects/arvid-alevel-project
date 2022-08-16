@@ -58,7 +58,12 @@ end procedure
 procedure update
     if isGrounded = true
         canRun = true
-        canJump = true
+        if inputKeys.jump is up
+            canJump = true
+        end if
+        if hasJumped = true
+            hasJumped = false
+        end if
         if isJumping = false
             drivingVertcalForce = 0
             finalVerticalVel = 0
@@ -104,9 +109,7 @@ end procedure
 
 ### Outcome
 
-I am reusing the force method from the previous movement. This is for similar reasons, as it allows for better implementation of more complicated movement systems. The gravity uses this system with very little resistive force to ensure acceleration and top speed when falling is very high.
-
-I have had to change the way collision is detected to ensure the method of creating vertical movement I wanted to use will work. Previously, the collider was a function which would only ever check if the player and ground were touching, not when they stopped. The new method checks each frame for touching the ground, and returns false if anything other than this is the case.
+I started by creating 3 separate variables which checked for if a player could jump, was currently jumping or had already jumped. While the player is in an active jump, releasing the correct key stops it early and also allows for future checks like enabling rolls. Checking if the player has jumped disables the jump key from functioning again till it is both up and the player is grounded for at least 1 frame.
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -377,7 +380,9 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The challenge was, once new collision and gravity were made, to reset the velocity of the player when they touched the ground, as touching the ground would not apply any force, just stop the player from moving. This meant the player would start falling faster if they fell too soon after a previous fall.
+The main challenge was getting the movement to feel smooth: this meant the jump had to feel snappy but still obey the same laws as the rest of the movement system. Along with ensuring the player could not repeatedly jump when holding down a key, and that releasing the key would allow for another jump, when touching the ground, mean the creation of several new variables and repetitions of statements that felt redundant.
+
+Another challenge is the way horizontal movement interacts with the player being grounded. Currently, the player will only continue to move horizontally when grounded, whereas the intent was to allow horizontal movement to continue, and only allow forces to be applied when grounded. Currently, the player stops all horizontal movement when airborne, so this will have to be fixed.
 
 ## Testing
 
