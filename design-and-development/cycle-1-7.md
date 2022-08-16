@@ -74,6 +74,19 @@ procedure update
                 turn
     end if
     
+    if inputKeys.jump is down and canJump = true
+        drivingVerticalForce = -70
+        isJumping = true
+    end if
+    if isJumping = true and inputKeys.jump is up
+        hasJumped = true
+        isJumping = false
+    end if
+    if isJumping = true and drivingVerticalForce = 0
+        hasJumped = true
+        isJumping = false
+    end if
+    
     if isGrounded = false
         drivingVerticalForce = 10
     end if
@@ -239,14 +252,16 @@ var server = app.listen(8081, function () {
                 'Vertical Force: ' + drivingVerticalForce,
                 'Vertical Resistance: ' + resVerticalForce,
                 'Final Vel: ' + finalVerticalVel,
-                'grounded? ' + isGrounded
+                'grounded? ' + isGrounded,
+                'jumping? ' + isJumping,
+                'has jumped? ' + hasJumped
             ]);
 
             if (isGrounded) {
                 canRun = true;
-                resVerticalForce = 100;
                 if (!canJump && movementKeys.jump.isUp) {
                     canJump = true;
+                    hasJumped = false;
                 }
 
                 if (!isJumping) {
@@ -262,8 +277,11 @@ var server = app.listen(8081, function () {
                 canJump = false;
             }
 
-            if (!isGrounded && drivingVerticalForce != 10) {
+            if (!isGrounded && drivingVerticalForce != 10 && !isJumping) {
                 drivingVerticalForce += 1; //this is now the weight force
+            }
+            else if (!isGrounded && drivingVerticalForce != 10 && isJumping) {
+                drivingVerticalForce += 10;
             }
 
             //horizontal movement starts here...
@@ -321,8 +339,21 @@ var server = app.listen(8081, function () {
             //... and ends here
 
             //vertical movement starts here...
-            if (isGrounded && movementKeys.jump.isDown) {
-                player.y = 0;
+            if (isGrounded && movementKeys.jump.isDown && !hasJumped && canJump) {
+                drivingVerticalForce = -70;
+                isJumping = true; //allows for checks of an active jump
+                if (finalVerticalVel > 0) {
+                    finalVerticalVel = 0; //this cancels the passive downward force present on the first jump of the frame
+                }
+            }
+            if (movementKeys.jump.isUp && isJumping) {
+                    drivingVerticalForce = 0;
+                    isJumping = false;
+                    hasJumped = true; //ensures no more jumps can be done before the player touches the ground
+            }
+            if (isJumping && drivingVerticalForce == 0) {
+                    isJumping = false;
+                    hasJumped = true;
             }
             //... and ends here
 
