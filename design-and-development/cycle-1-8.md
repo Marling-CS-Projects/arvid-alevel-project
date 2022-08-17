@@ -1,11 +1,11 @@
-# 2.2.8 Cycle 7
+# 2.2.9 Cycle 8
 
 ## Design
 
 ### Objectives
 
-* [x] make a jump
-* [x] the jump should be variable in height based off of how long a key is held
+* [x] Ensure the horizontal movement works when airborne
+* [x] Add complexed movement interaction for flips and slides
 
 ### Usability Features
 

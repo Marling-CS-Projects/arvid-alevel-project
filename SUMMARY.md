@@ -23,6 +23,7 @@
 * [2.2.6 Cycle 5](design-and-development/cycle-1-5.md)
 * [2.2.7 Cycle 6](design-and-development/cycle-1-6.md)
 * [2.2.8 Cycle 7](design-and-development/cycle-1-7.md)
+* [2.2.9 Cycle 8](design-and-development/cycle-1-8.md)
 
 ## 3 Testing <a href="#testing" id="testing"></a>
 

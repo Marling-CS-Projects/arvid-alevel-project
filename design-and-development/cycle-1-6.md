@@ -349,12 +349,14 @@ The challenge was, once new collision and gravity were made, to reset the veloci
 
 ### Tests
 
-| Test | Instructions             | What I expect                                                                    | What actually happens | Pass/Fail |
-| ---- | ------------------------ | -------------------------------------------------------------------------------- | --------------------- | --------- |
-| 1    | Run the code             | A white rectangle falls onto some grey platforms on a black background.          | As expected           | Pass      |
-| 2    | Allow the player to fall | Should accelerate downwards, stop when hitting the ground                        | As expected           | Pass      |
-| 3    | Stay grounded            | isGrounded and canJump should be true, vertical force and resistance should be 0 | As expected           | Pass      |
+| Test | Instructions                                                         | What I expect                                                                                                                | What actually happens | Pass/Fail |
+| ---- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------- | --------- |
+| 1    | Run the code                                                         | A white rectangle falls onto some grey platforms on a black background.                                                      | As expected           | Pass      |
+| 2    | Allow the player to fall                                             | Should accelerate downwards, stop when hitting the ground                                                                    | As expected           | Pass      |
+| 3    | Stay grounded                                                        | isGrounded and canJump should be true, vertical force and resistance should be 0                                             | As expected           | Pass      |
+| 4    | Press the jump key                                                   | Player should instantly teleport to the top of the screen, isGrounded and canJump = false, player should fall and accelerate | As expected           | Pass      |
+| 5    | Repeatedly press the jump key before the player can reach the ground | finalVerticalVel should keep increasing, isGrounded and canJump stay false, Vertical Force should be a constant 10           | As expected           | Pass      |
 
 ### Evidence
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (1).png>)
