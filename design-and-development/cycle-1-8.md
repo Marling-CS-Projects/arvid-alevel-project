@@ -13,15 +13,10 @@
 
 ### Key Variables
 
-| Variable Name        | Use                                         |
-| -------------------- | ------------------------------------------- |
-| finalVerticalVel     | final vertical velocity component           |
-| drivingVerticalForce | driving force vertically                    |
-| resVerticalForce     | resisting force vertically                  |
-| playerMass           | player mass                                 |
-| isJumping            | checks if the player in currently in a jump |
-| hasJumped            | checks if the player has already jumped     |
-| canJump              | checks if the player is able to jump        |
+| Variable Name                   | Use                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| thresholdVertical/HorizontalVel | this checks if there is enough velocity for the player to perform a move |
+|                                 |                                                                          |
 
 ### Pseudocode
 
