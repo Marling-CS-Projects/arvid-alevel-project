@@ -375,9 +375,7 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The main challenge was getting the movement to feel smooth: this meant the jump had to feel snappy but still obey the same laws as the rest of the movement system. Along with ensuring the player could not repeatedly jump when holding down a key, and that releasing the key would allow for another jump, when touching the ground, mean the creation of several new variables and repetitions of statements that felt redundant.
-
-Another challenge is the way horizontal movement interacts with the player being grounded. Currently, the player will only continue to move horizontally when grounded, whereas the intent was to allow horizontal movement to continue, and only allow forces to be applied when grounded. Currently, the player stops all horizontal movement when airborne, so this will have to be fixed.
+&#x20;There wasn't anything
 
 ## Testing
 
