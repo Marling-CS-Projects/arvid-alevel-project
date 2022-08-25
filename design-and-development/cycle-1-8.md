@@ -104,7 +104,7 @@ end procedure
 
 ### Outcome
 
-I started by creating 3 separate variables which checked for if a player could jump, was currently jumping or had already jumped. While the player is in an active jump, releasing the correct key stops it early and also allows for future checks like enabling rolls. Checking if the player has jumped disables the jump key from functioning again till it is both up and the player is grounded for at least 1 frame.
+I added a check to the horizontal movement section that ensured acceleration and applied forces would only occur when grounded and made momentum carry continue regardless of being grounded or not. This means the player can't&#x20;
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -393,4 +393,4 @@ var server = app.listen(8081, function () {
 
 ### Evidence
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (1).png>)

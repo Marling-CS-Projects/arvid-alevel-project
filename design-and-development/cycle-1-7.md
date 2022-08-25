@@ -400,4 +400,4 @@ Another challenge is the way horizontal movement interacts with the player being
 
 ### Evidence
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (1).png>)
