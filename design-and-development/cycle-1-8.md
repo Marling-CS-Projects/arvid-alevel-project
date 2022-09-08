@@ -13,91 +13,25 @@
 
 ### Key Variables
 
-| Variable Name                   | Use                                                                      |
-| ------------------------------- | ------------------------------------------------------------------------ |
-| thresholdVertical/HorizontalVel | this checks if there is enough velocity for the player to perform a move |
-|                                 |                                                                          |
+| Variable Name | Use |
+| ------------- | --- |
+|               |     |
+|               |     |
 
 ### Pseudocode
 
+To keeps things clean, I'll only include relevant changes in pseudocode
+
 ```
-object config
-    height: 600
-    width: 800
-    physics: gravity
-    scene: use create and update procedures
-    scale: center game window, scale to fit
-end object
+if airborne = true
+    if inputKeys.down isDown
+        rollCheck = true
+    endif
+endif
 
-procedure preload
-    ground = ground.png
-    background = background.png
-    player = player.png
-end procedure
-
-procedure create
-    player = create rectangle (position, physics and image scaling)
-    ground = create rectangle (position, image scaling and physics)
-    
-    set collisions between player and the ground
-    set collisions between player and the edge of the window
-    
-    if player is touching ground
-        isGrounded = true
-    end if
-    
-    inputKeys = keybind setup
-
-end procedure
-
-procedure update
-    if isGrounded = true
-        canRun = true
-        if inputKeys.jump is up
-            canJump = true
-        end if
-        if hasJumped = true
-            hasJumped = false
-        end if
-        if isJumping = false
-            drivingVertcalForce = 0
-            finalVerticalVel = 0
-        end if
-    end if    
-    if inputKeys.left is down and canRun = true
-            drivingHorizontalForce = negative
-            if facingRight
-                turn
-        elif inputKeys.right is down and canRun = true
-            drivingHorizontalForce = positive
-            if facingLeft
-                turn
-    end if
-    
-    if inputKeys.jump is down and canJump = true
-        drivingVerticalForce = -70
-        isJumping = true
-    end if
-    if isJumping = true and inputKeys.jump is up
-        hasJumped = true
-        isJumping = false
-    end if
-    if isJumping = true and drivingVerticalForce = 0
-        hasJumped = true
-        isJumping = false
-    end if
-    
-    if isGrounded = false
-        drivingVerticalForce = 10
-    end if
-        
-    resForce = finalVel / 2
-    finalVel += (drivingHorizontalForce - resHorizontalForce) / 2
-    move player finalHorizontalVel
-    resForce = finalVel / 2
-    finalVel += (drivingVerticalForce - resVerticalForce) / 2
-    move player finalVerticalVel
-end procedure
+if isGrounded and rollCheck = true
+    drivingHorizontalForce = greater than walking in correct direction
+endif    
 ```
 
 ## Development
