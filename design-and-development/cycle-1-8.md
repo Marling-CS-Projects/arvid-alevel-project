@@ -123,13 +123,17 @@ var server = app.listen(8081, function () {
         var finalVerticalVel = 0;
         var drivingVerticalForce = 0;
         var resVerticalForce = 0;
-
         var hasJumped = false;
         var isJumping = false;
         var canJump = false;
 
         var isGrounded = false;
         var canRun = false;
+
+        //special movement
+        var slideThresholdVel = 300;
+        var canSlide = false;
+        var sliding = false;
 
         var game = new Phaser.Game(config);
 
@@ -168,6 +172,7 @@ var server = app.listen(8081, function () {
             movementKeys = this.input.keyboard.addKeys({
                 left: 'left',
                 right: 'right',
+                down: 'down',
                 jump: 'Z'
             })
         }
@@ -181,18 +186,26 @@ var server = app.listen(8081, function () {
                 isGrounded = false;
             }
 
+            //debug text for testing
             text.setText([
-                'canJump: ' + canJump,
-                'Vertical Force: ' + drivingVerticalForce,
-                'Vertical Resistance: ' + resVerticalForce,
-                'Final Vel: ' + finalVerticalVel,
-                'grounded? ' + isGrounded,
-                'jumping? ' + isJumping,
-                'has jumped? ' + hasJumped
+                'grounded: ' + isGrounded,
+                'horizontalVel: ' + finalHorizontalVel,
+                'canRun: ' + canRun,
+                'canSlide: ' + canSlide,
+                'driving horizontal: ' + drivingHorizontalForce
             ]);
 
             if (isGrounded) {
                 canRun = true;
+                if (!sliding) {
+                    if (slideThresholdVel <= Math.abs(finalHorizontalVel)) {
+                        canSlide = true
+                    }
+                    else if (slideThresholdVel > Math.abs(finalHorizontalVel)) {
+                        canSlide = false
+                    }
+                }
+                
                 if (!canJump && movementKeys.jump.isUp) {
                     canJump = true;
                     hasJumped = false;
@@ -209,13 +222,7 @@ var server = app.listen(8081, function () {
             else {
                 canRun = false;
                 canJump = false;
-            }
-
-            if (!isGrounded && drivingVerticalForce != 10 && !isJumping) {
-                drivingVerticalForce += 1; //this is now the weight force
-            }
-            else if (!isGrounded && drivingVerticalForce != 10 && isJumping) {
-                drivingVerticalForce += 10;
+                canSlide = false;
             }
 
             //horizontal movement starts here...
@@ -258,21 +265,17 @@ var server = app.listen(8081, function () {
                 }
             }
             else {
-                if (drivingHorizontalForce != 0) {
-                    if (drivingHorizontalForce < 0) {
-                        drivingHorizontalForce += 10;
-                    }
-                    else {
-                        drivingHorizontalForce += -10;
-                    }
-                }
-                else {
-                    drivingHorizontalForce = 0;
-                }
+                drivingHorizontalForce = drivingHorizontalForce;
             }
             //... and ends here
 
             //vertical movement starts here...
+            if (!isGrounded && drivingVerticalForce != 10 && !isJumping) {
+                drivingVerticalForce += 1; //this is now the weight force
+            }
+            else if (!isGrounded && drivingVerticalForce != 10 && isJumping) {
+                drivingVerticalForce += 10;
+            }
             if (isGrounded && movementKeys.jump.isDown && !hasJumped && canJump) {
                 drivingVerticalForce = -70;
                 isJumping = true; //allows for checks of an active jump
@@ -291,6 +294,33 @@ var server = app.listen(8081, function () {
             }
             //... and ends here
 
+            //special movement starts here...
+            if (movementKeys.down.isDown && canSlide) {
+                sliding = true;
+                canSlide = false;
+                if (drivingHorizontalForce < 0) {
+                    drivingHorizontalForce += -50;
+                }
+                if (drivingHorizontalForce > 0) {
+                    drivingHorizontalForce += 50;
+                    
+                }
+            }
+            //... and ends here
+            if (isGrounded && movementKeys.right.isUp && movementKeys.left.isUp) {
+                if (drivingHorizontalForce != 0) {
+                    if (drivingHorizontalForce < 0) {
+                        drivingHorizontalForce += 10;
+                    }
+                    else {
+                        drivingHorizontalForce += -10;
+                    }
+                }
+                else {
+                    drivingHorizontalForce = 0;
+                }
+            }
+
             resHorizontalForce = 0.65 * ((finalHorizontalVel) / 2); //resistance here is reliant on the velocity. Velocity is self limiting.
             finalHorizontalVel = parseInt(finalHorizontalVel + ((drivingHorizontalForce - resHorizontalForce) / playerMass));
             /*calculates horizontal velocity based off of the 'forces' applied. Doing it this way means dashes and extra movement boosts
@@ -300,6 +330,7 @@ var server = app.listen(8081, function () {
             resVerticalForce = 0.0001 * ((finalVerticalVel ^ 2) / 2);
             finalVerticalVel = parseInt(finalVerticalVel + (drivingVerticalForce - resVerticalForce));
             player.setVelocityY(finalVerticalVel);
+            //louie is in pain. perfect.
         }
     </script>
 
