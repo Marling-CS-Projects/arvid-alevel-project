@@ -13,12 +13,9 @@
 
 ### Key Variables
 
-| Variable Name | Use                                                             |
-| ------------- | --------------------------------------------------------------- |
-| isAirborne    | checks to see if the player is not on the ground                |
-| rollCheck     | checks to see if the player can roll                            |
-| rolling       | checks the state of the player - weather they're rolling or not |
-| rolled        | checks to see if the roll is complete                           |
+| Variable Name  | Use                                                         |
+| -------------- | ----------------------------------------------------------- |
+| slideThreshold | the point at which the player has enough velocity to slide. |
 
 ### Pseudocode
 
