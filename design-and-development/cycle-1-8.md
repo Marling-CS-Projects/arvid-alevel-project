@@ -395,16 +395,16 @@ The largest challenge here was getting the dash to stop after it was performed. 
 
 ### Tests
 
-| Test | Instructions                                                                           | What I expect                                                                                                                                                                                          | What actually happens | Pass/Fail |
-| ---- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- | --------- |
-| 1    | Run the code                                                                           | A white rectangle falls onto some grey platforms on a black background.                                                                                                                                | As expected           | Pass      |
-| 2    | Allow the player to fall                                                               | Should accelerate downwards, stop when hitting the ground                                                                                                                                              | As expected           | Pass      |
-| 3    | Stay grounded                                                                          | isGrounded and canJump should be true, vertical force and resistance should be 0                                                                                                                       | As expected           | Pass      |
-| 4    | Hold the jump key                                                                      | Player should jump, and finalVerticalVelocity should start at -70 and rapidly decrease while the key is held. isJumping = true                                                                         | As expected           | Pass      |
-| 5    | The key is held till the player reaches the ground                                     | Player should eventually return to the ground, isJumping should be true on the way up, false on the way down, vise versa for hasJumped. Can jump should remain false as the player touches the ground. | As expected           | Pass      |
-| 6    | The key is released early                                                              | All the conditions from test 5 should hold true, the jump should end early and thus be smaller                                                                                                         | As expected           | Pass      |
-| 7    | The key is released early and then pressed again before the player touches the ground. | The player's jump should be cut short and pressing the jump key again should not do anything.                                                                                                          | As expected           | Pass      |
+| Test | Instructions                                                                          | What I expect                                                                  | What actually happens | Pass/Fail |
+| ---- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------- | --------- |
+| 1    | Run the code                                                                          | A white rectangle falls onto some grey platforms on a black background.        | As expected           | Pass      |
+| 2    | Start running and press down before top speed                                         | No change. The player should keep running and no dash should be performed      | As expected           | Pass      |
+| 3    | Run to top speed and hold down the down key                                           | The player should rapidly accelerate and then rapidly decelerate shortly after | As expected           | Pass      |
+| 4    | Repeat previous and press directional keys after coming to a stop, still holding down | The player should not move                                                     | As expected           | Pass      |
+| 5    | The dash is released early, and side keys pressed                                     | Rapid acceleration should stop, player should be able to move                  | As expected           | Pass      |
+| 6    | Jump is pressed during the dash                                                       | Player should leave this earth's atmosphere                                    | As expected           | Pass      |
+| 7    | Jump is pressed during a normal run                                                   | Player should keep moving at the same velocity in air                          | As expected           | Pass      |
 
 ### Evidence
 
-![](<../.gitbook/assets/image (1).png>)
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
