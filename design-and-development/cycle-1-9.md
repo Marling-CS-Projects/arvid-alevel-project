@@ -1,11 +1,10 @@
-# 2.2.8 Cycle 7
+# 2.2.10 Cycle 9
 
 ## Design
 
 ### Objectives
 
-* [x] make a jump
-* [x] the jump should be variable in height based off of how long a key is held
+* [x] Change each value in the game to a variable to allow for easier changes to be made
 
 ### Usability Features
 
@@ -13,103 +12,45 @@
 
 ### Key Variables
 
-| Variable Name        | Use                                         |
-| -------------------- | ------------------------------------------- |
-| finalVerticalVel     | final vertical velocity component           |
-| drivingVerticalForce | driving force vertically                    |
-| resVerticalForce     | resisting force vertically                  |
-| playerMass           | player mass                                 |
-| isJumping            | checks if the player in currently in a jump |
-| hasJumped            | checks if the player has already jumped     |
-| canJump              | checks if the player is able to jump        |
+| Variable Name  | Use |
+| -------------- | --- |
+| slideThreshold |     |
 
 ### Pseudocode
 
+To keeps things clean, I'll only include relevant changes in pseudocode
+
 ```
-object config
-    height: 600
-    width: 800
-    physics: gravity
-    scene: use create and update procedures
-    scale: center game window, scale to fit
-end object
+if velocity = slideThreshold
+    canSlide = true;
+endif
 
-procedure preload
-    ground = ground.png
-    background = background.png
-    player = player.png
-end procedure
+if movementKeys.down.isDown and canSlide
+    sliding = true
+    canSlide = false
+endif
 
-procedure create
-    player = create rectangle (position, physics and image scaling)
-    ground = create rectangle (position, image scaling and physics)
-    
-    set collisions between player and the ground
-    set collisions between player and the edge of the window
-    
-    if player is touching ground
-        isGrounded = true
-    end if
-    
-    inputKeys = keybind setup
+if sliding = true
+    if force < 0 and > -450
+        force += -30
+        sliding = false
+        hasSlid = true
+    endif
+    if force > 0 and < 450
+        force += 30
+        sliding = false
+        hasSlid = true
+    endif
+endif
 
-end procedure
 
-procedure update
-    if isGrounded = true
-        canRun = true
-        if inputKeys.jump is up
-            canJump = true
-        end if
-        if hasJumped = true
-            hasJumped = false
-        end if
-        if isJumping = false
-            drivingVertcalForce = 0
-            finalVerticalVel = 0
-        end if
-    end if    
-    if inputKeys.left is down and canRun = true
-            drivingHorizontalForce = negative
-            if facingRight
-                turn
-        elif inputKeys.right is down and canRun = true
-            drivingHorizontalForce = positive
-            if facingLeft
-                turn
-    end if
-    
-    if inputKeys.jump is down and canJump = true
-        drivingVerticalForce = -70
-        isJumping = true
-    end if
-    if isJumping = true and inputKeys.jump is up
-        hasJumped = true
-        isJumping = false
-    end if
-    if isJumping = true and drivingVerticalForce = 0
-        hasJumped = true
-        isJumping = false
-    end if
-    
-    if isGrounded = false
-        drivingVerticalForce = 10
-    end if
-        
-    resForce = finalVel / 2
-    finalVel += (drivingHorizontalForce - resHorizontalForce) / 2
-    move player finalHorizontalVel
-    resForce = finalVel / 2
-    finalVel += (drivingVerticalForce - resVerticalForce) / 2
-    move player finalVerticalVel
-end procedure
 ```
 
 ## Development
 
 ### Outcome
 
-I started by creating 3 separate variables which checked for if a player could jump, was currently jumping or had already jumped. While the player is in an active jump, releasing the correct key stops it early and also allows for future checks like enabling rolls. Checking if the player has jumped disables the jump key from functioning again till it is both up and the player is grounded for at least 1 frame.
+Firstly I created a variable for threshold velocity rather than setting it as an arbitrary value in an if statement to make changes easier. I plan to do this to all values in the next cycle. The way this works is similar to turning and jumping: I have boolean variables that check if the player can slide, is currently sliding, and has slid. This splits it into 3 sections that lock each other out of being active at the same time so the dash is consistent.
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -192,13 +133,18 @@ var server = app.listen(8081, function () {
         var finalVerticalVel = 0;
         var drivingVerticalForce = 0;
         var resVerticalForce = 0;
-
         var hasJumped = false;
         var isJumping = false;
         var canJump = false;
 
         var isGrounded = false;
         var canRun = false;
+
+        //special movement
+        var canSlide = false;
+        var sliding = false;
+        var hasSlid = false;
+        var slideDrag = Math.abs(drivingHorizontalForce) / 5;
 
         var game = new Phaser.Game(config);
 
@@ -237,6 +183,7 @@ var server = app.listen(8081, function () {
             movementKeys = this.input.keyboard.addKeys({
                 left: 'left',
                 right: 'right',
+                down: 'down',
                 jump: 'Z'
             })
         }
@@ -250,18 +197,32 @@ var server = app.listen(8081, function () {
                 isGrounded = false;
             }
 
+            //debug text for testing
             text.setText([
-                'canJump: ' + canJump,
-                'Vertical Force: ' + drivingVerticalForce,
-                'Vertical Resistance: ' + resVerticalForce,
-                'Final Vel: ' + finalVerticalVel,
-                'grounded? ' + isGrounded,
-                'jumping? ' + isJumping,
-                'has jumped? ' + hasJumped
+                'horizontalVel: ' + finalHorizontalVel,
+                'canRun: ' + canRun,
+                'canSlide: ' + canSlide,
+                'sliding: ' + sliding,
+                'hasSlid: ' + hasSlid,
+                'driving horizontal: ' + drivingHorizontalForce
             ]);
 
             if (isGrounded) {
-                canRun = true;
+                if (!sliding && !hasSlid) {
+                    canRun = true;
+                }
+                else if (sliding || hasSlid) {
+                    canRun = false;
+                }
+                if (!sliding && !hasSlid) {
+                    if (Math.abs(finalHorizontalVel) >= 300) {
+                        canSlide = true;
+                    }
+                    else {
+                        canSlide = false;
+                    }
+                }
+                
                 if (!canJump && movementKeys.jump.isUp) {
                     canJump = true;
                     hasJumped = false;
@@ -278,13 +239,11 @@ var server = app.listen(8081, function () {
             else {
                 canRun = false;
                 canJump = false;
+                canSlide = false;
             }
 
-            if (!isGrounded && drivingVerticalForce != 10 && !isJumping) {
-                drivingVerticalForce += 1; //this is now the weight force
-            }
-            else if (!isGrounded && drivingVerticalForce != 10 && isJumping) {
-                drivingVerticalForce += 10;
+            if (movementKeys.down.isUp && hasSlid) {
+                hasSlid = false;
             }
 
             //horizontal movement starts here...
@@ -327,26 +286,22 @@ var server = app.listen(8081, function () {
                 }
             }
             else {
-                if (drivingHorizontalForce != 0) {
-                    if (drivingHorizontalForce < 0) {
-                        drivingHorizontalForce += 10;
-                    }
-                    else {
-                        drivingHorizontalForce += -10;
-                    }
-                }
-                else {
-                    drivingHorizontalForce = 0;
-                }
+                drivingHorizontalForce = drivingHorizontalForce;
             }
             //... and ends here
 
             //vertical movement starts here...
+            if (!isGrounded && drivingVerticalForce != 10 && !isJumping) {
+                drivingVerticalForce += 1; //this is now the weight force, so gravity is back. no more flight.
+            }
+            else if (!isGrounded && drivingVerticalForce != 10 && isJumping) {
+                drivingVerticalForce += 10;
+            }
             if (isGrounded && movementKeys.jump.isDown && !hasJumped && canJump) {
                 drivingVerticalForce = -70;
                 isJumping = true; //allows for checks of an active jump
                 if (finalVerticalVel > 0) {
-                    finalVerticalVel = 0; //this cancels the passive downward force present on the first jump of the frame
+                    finalVerticalVel = 0; //this cancels the passive downward force present on the first frame of the jump
                 }
             }
             if (movementKeys.jump.isUp && isJumping) {
@@ -360,6 +315,54 @@ var server = app.listen(8081, function () {
             }
             //... and ends here
 
+            //special movement starts here...
+            if (movementKeys.down.isDown && canSlide) {
+                sliding = true;
+                canSlide = false;
+            }
+            if (drivingHorizontalForce < 0 && sliding && drivingHorizontalForce > -450) {
+                drivingHorizontalForce += -30;
+            }
+            else if (sliding && drivingHorizontalForce <= -450) {
+                sliding = false;
+                hasSlid = true;
+            }
+            if (drivingHorizontalForce > 0 && sliding && drivingHorizontalForce < 450) {
+                drivingHorizontalForce += 30;
+            }
+            else if (sliding && drivingHorizontalForce >= 450) {
+                sliding = false;
+                hasSlid = true;
+            }
+            //... and ends here
+
+            if (isGrounded && movementKeys.right.isUp && movementKeys.left.isUp || isGrounded && hasSlid) {
+                if (!hasSlid && drivingHorizontalForce != 0) {
+                    if (drivingHorizontalForce < 0) {
+                        drivingHorizontalForce += 10;
+                    }
+                    else {
+                        drivingHorizontalForce += -10;
+                    }
+                }
+                else {
+                    drivingHorizontalForce = 0;
+                }
+                if (hasSlid && drivingHorizontalForce != 0) {
+                    if (drivingHorizontalForce < 0) {
+                        drivingHorizontalForce += slideDrag;
+                    }
+                    else {
+                        drivingHorizontalForce += -slideDrag;
+                    }
+                }
+                else {
+                    drivingHorizontalForce = 0;
+                }
+            }
+            
+
+            //Ben Cook has no comments
             resHorizontalForce = 0.65 * ((finalHorizontalVel) / 2); //resistance here is reliant on the velocity. Velocity is self limiting.
             finalHorizontalVel = parseInt(finalHorizontalVel + ((drivingHorizontalForce - resHorizontalForce) / playerMass));
             /*calculates horizontal velocity based off of the 'forces' applied. Doing it this way means dashes and extra movement boosts
@@ -369,6 +372,7 @@ var server = app.listen(8081, function () {
             resVerticalForce = 0.0001 * ((finalVerticalVel ^ 2) / 2);
             finalVerticalVel = parseInt(finalVerticalVel + (drivingVerticalForce - resVerticalForce));
             player.setVelocityY(finalVerticalVel);
+            //louie is in pain from if statement overload. perfect.
         }
     </script>
 
@@ -380,24 +384,22 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The main challenge was getting the movement to feel smooth: this meant the jump had to feel snappy but still obey the same laws as the rest of the movement system. Along with ensuring the player could not repeatedly jump when holding down a key, and that releasing the key would allow for another jump, when touching the ground, mean the creation of several new variables and repetitions of statements that felt redundant.
-
-Another challenge is the way horizontal movement interacts with the player being grounded. Currently, the player will only continue to move horizontally when grounded, whereas the intent was to allow horizontal movement to continue, and only allow forces to be applied when grounded. Currently, the player stops all horizontal movement when airborne, so this will have to be fixed.
+The largest challenge here was getting the dash to stop after it was performed. The dash is a horizontal movement and has a separate deceleration function to running. As a result, stopping running's functions from happening during sliding whilst still having the slide behave properly was a challenge. In the end, this was solved by prioritising the dahs while it's key was held, disabling all functions to do with running whilst it was active, and vice versa for the slide while the player was running. This was fixed, rather sloppily, with the various boolean variables checking for each stage of the slide.
 
 ## Testing
 
 ### Tests
 
-| Test | Instructions                                                                           | What I expect                                                                                                                                                                                          | What actually happens | Pass/Fail |
-| ---- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- | --------- |
-| 1    | Run the code                                                                           | A white rectangle falls onto some grey platforms on a black background.                                                                                                                                | As expected           | Pass      |
-| 2    | Allow the player to fall                                                               | Should accelerate downwards, stop when hitting the ground                                                                                                                                              | As expected           | Pass      |
-| 3    | Stay grounded                                                                          | isGrounded and canJump should be true, vertical force and resistance should be 0                                                                                                                       | As expected           | Pass      |
-| 4    | Hold the jump key                                                                      | Player should jump, and finalVerticalVelocity should start at -70 and rapidly decrease while the key is held. isJumping = true                                                                         | As expected           | Pass      |
-| 5    | The key is held till the player reaches the ground                                     | Player should eventually return to the ground, isJumping should be true on the way up, false on the way down, vise versa for hasJumped. Can jump should remain false as the player touches the ground. | As expected           | Pass      |
-| 6    | The key is released early                                                              | All the conditions from test 5 should hold true, the jump should end early and thus be smaller                                                                                                         | As expected           | Pass      |
-| 7    | The key is released early and then pressed again before the player touches the ground. | The player's jump should be cut short and pressing the jump key again should not do anything.                                                                                                          | As expected           | Pass      |
+| Test | Instructions                                                                          | What I expect                                                                  | What actually happens | Pass/Fail |
+| ---- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------- | --------- |
+| 1    | Run the code                                                                          | A white rectangle falls onto some grey platforms on a black background.        | As expected           | Pass      |
+| 2    | Start running and press down before top speed                                         | No change. The player should keep running and no dash should be performed      | As expected           | Pass      |
+| 3    | Run to top speed and hold down the down key                                           | The player should rapidly accelerate and then rapidly decelerate shortly after | As expected           | Pass      |
+| 4    | Repeat previous and press directional keys after coming to a stop, still holding down | The player should not move                                                     | As expected           | Pass      |
+| 5    | The dash is released early, and side keys pressed                                     | Rapid acceleration should stop, player should be able to move                  | As expected           | Pass      |
+| 6    | Jump is pressed during the dash                                                       | Player should leave this earth's atmosphere                                    | As expected           | Pass      |
+| 7    | Jump is pressed during a normal run                                                   | Player should keep moving at the same velocity in air                          | As expected           | Pass      |
 
 ### Evidence
 
-![](<../.gitbook/assets/image (1).png>)
+<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
