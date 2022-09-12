@@ -13,31 +13,49 @@
 
 ### Key Variables
 
-| Variable Name  | Use                                                         |
-| -------------- | ----------------------------------------------------------- |
-| slideThreshold | the point at which the player has enough velocity to slide. |
+| Variable Name  | Use                                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------------- |
+| slideThreshold | the value for the point at which the player has enough velocity to slide.                                       |
+| canSlide       | a boolean that checks if the player is allowed to slide                                                         |
+| sliding        | a boolean that checks if the player in currently in a slide                                                     |
+| hasSlid        | a boolean that just prevents the player from performing another slide when a slide has recently been completed. |
+| down           | the variable that stores the downwards input                                                                    |
 
 ### Pseudocode
 
 To keeps things clean, I'll only include relevant changes in pseudocode
 
 ```
-if airborne = true
-    if inputKeys.down isDown
-        rollCheck = true
+if velocity = slideThreshold
+    canSlide = true;
+endif
+
+if movementKeys.down.isDown and canSlide
+    sliding = true
+    canSlide = false
+endif
+
+if sliding = true
+    if force < 0 and > -450
+        force += -30
+        sliding = false
+        hasSlid = true
+    endif
+    if force > 0 and < 450
+        force += 30
+        sliding = false
+        hasSlid = true
     endif
 endif
 
-if isGrounded and rollCheck = true
-    drivingHorizontalForce = greater than walking in correct direction
-endif    
+
 ```
 
 ## Development
 
 ### Outcome
 
-I added a check to the horizontal movement section that ensured acceleration and applied forces would only occur when grounded and made momentum carry continue regardless of being grounded or not. This means the player can't&#x20;
+Firstly I created a variable for threshold velocity rather than setting it as an arbitrary value in an if statement to make changes easier. I plan to do this to all values in the next cycle. The way this works is similar to turning and jumping: I have boolean variables that check if the player can slide, is currently sliding, and has slid. This splits it into 3 sections that lock each other out of being active at the same time so the dash is consistent.
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -128,9 +146,10 @@ var server = app.listen(8081, function () {
         var canRun = false;
 
         //special movement
-        var slideThresholdVel = 300;
         var canSlide = false;
         var sliding = false;
+        var hasSlid = false;
+        var slideDrag = Math.abs(drivingHorizontalForce) / 5;
 
         var game = new Phaser.Game(config);
 
@@ -185,21 +204,27 @@ var server = app.listen(8081, function () {
 
             //debug text for testing
             text.setText([
-                'grounded: ' + isGrounded,
                 'horizontalVel: ' + finalHorizontalVel,
                 'canRun: ' + canRun,
                 'canSlide: ' + canSlide,
+                'sliding: ' + sliding,
+                'hasSlid: ' + hasSlid,
                 'driving horizontal: ' + drivingHorizontalForce
             ]);
 
             if (isGrounded) {
-                canRun = true;
-                if (!sliding) {
-                    if (slideThresholdVel <= Math.abs(finalHorizontalVel)) {
-                        canSlide = true
+                if (!sliding && !hasSlid) {
+                    canRun = true;
+                }
+                else if (sliding || hasSlid) {
+                    canRun = false;
+                }
+                if (!sliding && !hasSlid) {
+                    if (Math.abs(finalHorizontalVel) >= 300) {
+                        canSlide = true;
                     }
-                    else if (slideThresholdVel > Math.abs(finalHorizontalVel)) {
-                        canSlide = false
+                    else {
+                        canSlide = false;
                     }
                 }
                 
@@ -220,6 +245,10 @@ var server = app.listen(8081, function () {
                 canRun = false;
                 canJump = false;
                 canSlide = false;
+            }
+
+            if (movementKeys.down.isUp && hasSlid) {
+                hasSlid = false;
             }
 
             //horizontal movement starts here...
@@ -268,7 +297,7 @@ var server = app.listen(8081, function () {
 
             //vertical movement starts here...
             if (!isGrounded && drivingVerticalForce != 10 && !isJumping) {
-                drivingVerticalForce += 1; //this is now the weight force
+                drivingVerticalForce += 1; //this is now the weight force, so gravity is back. no more flight.
             }
             else if (!isGrounded && drivingVerticalForce != 10 && isJumping) {
                 drivingVerticalForce += 10;
@@ -277,7 +306,7 @@ var server = app.listen(8081, function () {
                 drivingVerticalForce = -70;
                 isJumping = true; //allows for checks of an active jump
                 if (finalVerticalVel > 0) {
-                    finalVerticalVel = 0; //this cancels the passive downward force present on the first jump of the frame
+                    finalVerticalVel = 0; //this cancels the passive downward force present on the first frame of the jump
                 }
             }
             if (movementKeys.jump.isUp && isJumping) {
@@ -295,17 +324,25 @@ var server = app.listen(8081, function () {
             if (movementKeys.down.isDown && canSlide) {
                 sliding = true;
                 canSlide = false;
-                if (drivingHorizontalForce < 0) {
-                    drivingHorizontalForce += -50;
-                }
-                if (drivingHorizontalForce > 0) {
-                    drivingHorizontalForce += 50;
-                    
-                }
+            }
+            if (drivingHorizontalForce < 0 && sliding && drivingHorizontalForce > -450) {
+                drivingHorizontalForce += -30;
+            }
+            else if (sliding && drivingHorizontalForce <= -450) {
+                sliding = false;
+                hasSlid = true;
+            }
+            if (drivingHorizontalForce > 0 && sliding && drivingHorizontalForce < 450) {
+                drivingHorizontalForce += 30;
+            }
+            else if (sliding && drivingHorizontalForce >= 450) {
+                sliding = false;
+                hasSlid = true;
             }
             //... and ends here
-            if (isGrounded && movementKeys.right.isUp && movementKeys.left.isUp) {
-                if (drivingHorizontalForce != 0) {
+
+            if (isGrounded && movementKeys.right.isUp && movementKeys.left.isUp || isGrounded && hasSlid) {
+                if (!hasSlid && drivingHorizontalForce != 0) {
                     if (drivingHorizontalForce < 0) {
                         drivingHorizontalForce += 10;
                     }
@@ -316,8 +353,21 @@ var server = app.listen(8081, function () {
                 else {
                     drivingHorizontalForce = 0;
                 }
+                if (hasSlid && drivingHorizontalForce != 0) {
+                    if (drivingHorizontalForce < 0) {
+                        drivingHorizontalForce += slideDrag;
+                    }
+                    else {
+                        drivingHorizontalForce += -slideDrag;
+                    }
+                }
+                else {
+                    drivingHorizontalForce = 0;
+                }
             }
+            
 
+            //Ben Cook has no comments
             resHorizontalForce = 0.65 * ((finalHorizontalVel) / 2); //resistance here is reliant on the velocity. Velocity is self limiting.
             finalHorizontalVel = parseInt(finalHorizontalVel + ((drivingHorizontalForce - resHorizontalForce) / playerMass));
             /*calculates horizontal velocity based off of the 'forces' applied. Doing it this way means dashes and extra movement boosts
@@ -327,7 +377,7 @@ var server = app.listen(8081, function () {
             resVerticalForce = 0.0001 * ((finalVerticalVel ^ 2) / 2);
             finalVerticalVel = parseInt(finalVerticalVel + (drivingVerticalForce - resVerticalForce));
             player.setVelocityY(finalVerticalVel);
-            //louie is in pain. perfect.
+            //louie is in pain from if statement overload. perfect.
         }
     </script>
 
@@ -339,7 +389,7 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-&#x20;There wasn't anything
+The largest challenge here was getting the dash to stop after it was performed. The dash is a horizontal movement and has a separate deceleration function to running. As a result, stopping running's functions from happening during sliding whilst still having the slide behave properly was a challenge. In the end, this was solved by prioritising the dahs while it's key was held, disabling all functions to do with running whilst it was active, and vice versa for the slide while the player was running. This was fixed, rather sloppily, with the various boolean variables checking for each stage of the slide.
 
 ## Testing
 
