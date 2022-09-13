@@ -36,7 +36,7 @@ right running = maxRunningForce
 
 ### Outcome
 
-Firstly I created a variable for threshold velocity rather than setting it as an arbitrary value in an if statement to make changes easier. I plan to do this to all values in the next cycle. The way this works is similar to turning and jumping: I have boolean variables that check if the player can slide, is currently sliding, and has slid. This splits it into 3 sections that lock each other out of being active at the same time so the dash is consistent.
+This was a very short cycle. I made every value present in the movement script a variable and replaced them in the script. To check if it functioned I just changed the values in the variable and saw if it applied properly to the rest of the programme. The purpose of this was more to make working on it in latter stages less painful.
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -130,7 +130,26 @@ var server = app.listen(8081, function () {
         var canSlide = false;
         var sliding = false;
         var hasSlid = false;
-        var slideDrag = Math.abs(drivingHorizontalForce) / 5;
+        var slideDeceleration = Math.abs(drivingHorizontalForce) / 5;
+
+        //movement values
+        var slidingThreshold = 300;
+
+        var maxRunningForce = 100;
+        var runningAcceleration = 10;
+        var runningDeceleration = 10;
+
+        var maxTurningForce = 200;
+        var turningThreshold = 90;
+        var turningAcceleration = 20;
+        var turningDeceleration = 10;
+
+        var maxGravity = 10;
+        var gravityAcceleration = 1;
+        var jumpForce = 70;
+
+        var maxSlideForce = 450;
+        var slideAcceleration = 30;
 
         var game = new Phaser.Game(config);
 
@@ -201,7 +220,7 @@ var server = app.listen(8081, function () {
                     canRun = false;
                 }
                 if (!sliding && !hasSlid) {
-                    if (Math.abs(finalHorizontalVel) >= 300) {
+                    if (Math.abs(finalHorizontalVel) >= slidingThreshold) {
                         canSlide = true;
                     }
                     else {
@@ -234,41 +253,41 @@ var server = app.listen(8081, function () {
 
             //horizontal movement starts here...
             if (canRun && movementKeys.left.isDown) {
-                if (drivingHorizontalForce >= 90 && !turningLeft) {
+                if (drivingHorizontalForce >= turningThreshold && !turningLeft) {
                     /*this checks for weather or not the player can perform a turn boost. 90 allows for input imperfections as it is one frame
                      worth of deceleration below the top speed making it easier to perform*/
                     turningLeft = true; //turning left and right had to be separated into 2 variable to prevent interactions between them
                 }
-                else if (drivingHorizontalForce > -200 && turningLeft) {
-                    drivingHorizontalForce += -20; //this makes you move faster when you're turning
-                    if (drivingHorizontalForce <= -200) { //this allows a greater top speed just after turning
+                else if (drivingHorizontalForce > -maxTurningForce && turningLeft) {
+                    drivingHorizontalForce += -turningAcceleration; //this makes you move faster when you're turning
+                    if (drivingHorizontalForce <= -maxTurningForce) { //this allows a greater top speed just after turning
                         turningLeft = false; //and once that top speed is reached, you are no longer considered to be turning
-                        drivingHorizontalForce = -200;
+                        drivingHorizontalForce = -maxTurningForce;
                     }
                 }
-                else if (drivingHorizontalForce > -100 && !turningLeft) { //force is a positive or negative quantity as velocity is a vector
-                    drivingHorizontalForce += -10;
+                else if (drivingHorizontalForce > -maxRunningForce && !turningLeft) { //force is a positive or negative quantity as velocity is a vector
+                    drivingHorizontalForce += -runningAcceleration;
                 }
-                else if (drivingHorizontalForce < -100 && !turningLeft && isGrounded) {
-                    drivingHorizontalForce += 10; //this checks if the player is travelling above the maximum base speed and decelerates them accordingly
+                else if (drivingHorizontalForce < -maxRunningForce && !turningLeft && isGrounded) {
+                    drivingHorizontalForce += turningDeceleration; //this checks if the player is travelling above the maximum base speed and decelerates them accordingly
                 }
             }
             else if (canRun && movementKeys.right.isDown) {
-                if (drivingHorizontalForce <= -90 && !turningRight) {
+                if (drivingHorizontalForce <= -turningThreshold && !turningRight) {
                     turningRight = true;
                 }
-                else if (drivingHorizontalForce < 200 && turningRight) {
-                    drivingHorizontalForce += 20;
-                    if (drivingHorizontalForce >= 200) {
+                else if (drivingHorizontalForce < maxTurningForce && turningRight) {
+                    drivingHorizontalForce += turningAcceleration;
+                    if (drivingHorizontalForce >= maxTurningForce) {
                         turningRight = false;
-                        drivingHorizontalForce = 200;
+                        drivingHorizontalForce = maxTurningForce;
                     }
                 }
-                else if (drivingHorizontalForce < 100 && !turningRight) {
-                    drivingHorizontalForce += 10;
+                else if (drivingHorizontalForce < maxRunningForce && !turningRight) {
+                    drivingHorizontalForce += runningAcceleration;
                 }
-                else if (drivingHorizontalForce > 100 && !turningRight && isGrounded) {
-                    drivingHorizontalForce += -10;
+                else if (drivingHorizontalForce > maxRunningForce && !turningRight && isGrounded) {
+                    drivingHorizontalForce += -runningAcceleration;
                 }
             }
             else {
@@ -277,14 +296,14 @@ var server = app.listen(8081, function () {
             //... and ends here
 
             //vertical movement starts here...
-            if (!isGrounded && drivingVerticalForce != 10 && !isJumping) {
-                drivingVerticalForce += 1; //this is now the weight force, so gravity is back. no more flight.
+            if (!isGrounded && drivingVerticalForce != maxGravity && !isJumping) {
+                drivingVerticalForce += gravityAcceleration; //this is now the weight force, so gravity is back. no more flight.
             }
-            else if (!isGrounded && drivingVerticalForce != 10 && isJumping) {
-                drivingVerticalForce += 10;
+            else if (!isGrounded && drivingVerticalForce != maxGravity && isJumping) {
+                drivingVerticalForce += maxGravity;
             }
             if (isGrounded && movementKeys.jump.isDown && !hasJumped && canJump) {
-                drivingVerticalForce = -70;
+                drivingVerticalForce = -jumpForce;
                 isJumping = true; //allows for checks of an active jump
                 if (finalVerticalVel > 0) {
                     finalVerticalVel = 0; //this cancels the passive downward force present on the first frame of the jump
@@ -306,17 +325,17 @@ var server = app.listen(8081, function () {
                 sliding = true;
                 canSlide = false;
             }
-            if (drivingHorizontalForce < 0 && sliding && drivingHorizontalForce > -450) {
-                drivingHorizontalForce += -30;
+            if (drivingHorizontalForce < 0 && sliding && drivingHorizontalForce > -maxSlideForce) {
+                drivingHorizontalForce += -slideAcceleration;
             }
-            else if (sliding && drivingHorizontalForce <= -450) {
+            else if (sliding && drivingHorizontalForce <= -maxSlideForce) {
                 sliding = false;
                 hasSlid = true;
             }
-            if (drivingHorizontalForce > 0 && sliding && drivingHorizontalForce < 450) {
-                drivingHorizontalForce += 30;
+            if (drivingHorizontalForce > 0 && sliding && drivingHorizontalForce < maxSlideForce) {
+                drivingHorizontalForce += slideAcceleration;
             }
-            else if (sliding && drivingHorizontalForce >= 450) {
+            else if (sliding && drivingHorizontalForce >= maxSlideForce) {
                 sliding = false;
                 hasSlid = true;
             }
@@ -325,10 +344,10 @@ var server = app.listen(8081, function () {
             if (isGrounded && movementKeys.right.isUp && movementKeys.left.isUp || isGrounded && hasSlid) {
                 if (!hasSlid && drivingHorizontalForce != 0) {
                     if (drivingHorizontalForce < 0) {
-                        drivingHorizontalForce += 10;
+                        drivingHorizontalForce += runningDeceleration;
                     }
                     else {
-                        drivingHorizontalForce += -10;
+                        drivingHorizontalForce += -runningDeceleration;
                     }
                 }
                 else {
@@ -336,10 +355,10 @@ var server = app.listen(8081, function () {
                 }
                 if (hasSlid && drivingHorizontalForce != 0) {
                     if (drivingHorizontalForce < 0) {
-                        drivingHorizontalForce += slideDrag;
+                        drivingHorizontalForce += slideDeceleration;
                     }
                     else {
-                        drivingHorizontalForce += -slideDrag;
+                        drivingHorizontalForce += -slideDeceleration;
                     }
                 }
                 else {
@@ -370,22 +389,18 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The largest challenge here was getting the dash to stop after it was performed. The dash is a horizontal movement and has a separate deceleration function to running. As a result, stopping running's functions from happening during sliding whilst still having the slide behave properly was a challenge. In the end, this was solved by prioritising the dahs while it's key was held, disabling all functions to do with running whilst it was active, and vice versa for the slide while the player was running. This was fixed, rather sloppily, with the various boolean variables checking for each stage of the slide.
+The only challenge present in this cycle was ensuring that all the different numerical values were replaced with the new variables. This was mostly done with the replacement feature but as some values were repeated in different areas that I would like separate variables for, this made it slightly more tedious than it needed to be.
 
 ## Testing
 
 ### Tests
 
-| Test | Instructions                                                                          | What I expect                                                                  | What actually happens | Pass/Fail |
-| ---- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------- | --------- |
-| 1    | Run the code                                                                          | A white rectangle falls onto some grey platforms on a black background.        | As expected           | Pass      |
-| 2    | Start running and press down before top speed                                         | No change. The player should keep running and no dash should be performed      | As expected           | Pass      |
-| 3    | Run to top speed and hold down the down key                                           | The player should rapidly accelerate and then rapidly decelerate shortly after | As expected           | Pass      |
-| 4    | Repeat previous and press directional keys after coming to a stop, still holding down | The player should not move                                                     | As expected           | Pass      |
-| 5    | The dash is released early, and side keys pressed                                     | Rapid acceleration should stop, player should be able to move                  | As expected           | Pass      |
-| 6    | Jump is pressed during the dash                                                       | Player should leave this earth's atmosphere                                    | As expected           | Pass      |
-| 7    | Jump is pressed during a normal run                                                   | Player should keep moving at the same velocity in air                          | As expected           | Pass      |
+| Test | Instructions                       | What I expect                                                                                    | What actually happens | Pass/Fail |
+| ---- | ---------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------- | --------- |
+| 1    | Run the code                       | A white rectangle falls onto some grey platforms on a black background.                          | As expected           | Pass      |
+| 2    | Repeat all previous movement tests | They should all work the way they're expected to                                                 | As expected           | Pass      |
+| 3    | Change a variable drastically      | The change should be observed in all directions that variable effects (e.g. runningDeceleration) | As expected           | Pass      |
 
 ### Evidence
 
-<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>

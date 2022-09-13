@@ -359,4 +359,4 @@ The challenge was, once new collision and gravity were made, to reset the veloci
 
 ### Evidence
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (5).png>)
