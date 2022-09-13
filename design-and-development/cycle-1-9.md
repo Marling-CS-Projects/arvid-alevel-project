@@ -12,38 +12,24 @@
 
 ### Key Variables
 
-| Variable Name  | Use |
-| -------------- | --- |
-| slideThreshold |     |
+| Variable Name                                                    | Use                                                              |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------- |
+| maxRunningForce                                                  | the value for the maximum running force                          |
+| runningAcclerator                                                | the value by which running force increases                       |
+| runningDecelerator                                               | the value by which running force decreases when decelerating     |
+| same variables for each other movement system: slide, jump, etc. | same variables for each other movement system: slide, jump, etc. |
 
 ### Pseudocode
 
 To keeps things clean, I'll only include relevant changes in pseudocode
 
 ```
-if velocity = slideThreshold
-    canSlide = true;
-endif
+maxRunningForce = 200;
 
-if movementKeys.down.isDown and canSlide
-    sliding = true
-    canSlide = false
-endif
+left running = -maxRunningForce
+right running = maxRunningForce
 
-if sliding = true
-    if force < 0 and > -450
-        force += -30
-        sliding = false
-        hasSlid = true
-    endif
-    if force > 0 and < 450
-        force += 30
-        sliding = false
-        hasSlid = true
-    endif
-endif
-
-
+//this process can be repeated for each other movement
 ```
 
 ## Development
@@ -402,4 +388,4 @@ The largest challenge here was getting the dash to stop after it was performed. 
 
 ### Evidence
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>

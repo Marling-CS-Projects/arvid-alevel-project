@@ -439,4 +439,4 @@ The issue with this system was the issue that the player would still appear to b
 
 ### Evidence
 
-![](<../.gitbook/assets/image (3) (2).png>)
+![](<../.gitbook/assets/image (3).png>)
