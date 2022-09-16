@@ -5,24 +5,36 @@
 ### Objectives
 
 * [ ] Make a world with multiple screens
-* [ ] Make a camera that will switch between the screens based off of the player's location
-* [ ] Add a wall jump
+* [x] Make a camera that will switch between the screens based off of the player's location
 
 ### Usability Features
 
 * Simplified controls - no complications yet, just very basic movement. Easy to understand, should be easy to implement.
+* Visual Clarity - There are no filters, and all screens switch the same way and are the same size
 
 ### Key Variables
 
-| Variable Name | Use |
-| ------------- | --- |
-|               |     |
+| Variable Name | Use                                     |
+| ------------- | --------------------------------------- |
+| camera        | the variable used to control the camera |
+| player.x      | the player's x position                 |
+| cameraX       | the camera's x position                 |
 
 ### Pseudocode
 
 To keeps things clean, I'll only include relevant changes in pseudocode
 
 ```
+camera.size = window width, window height
+camera.position = x, y
+
+if player.x > cameraX + window width
+    cameraX += window width
+    camera.position = x, y
+end if
+if player.x < cameraX
+    cameraX += -window width
+end if
 ```
 
 ## Development
