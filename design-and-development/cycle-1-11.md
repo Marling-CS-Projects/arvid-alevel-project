@@ -1,49 +1,70 @@
-# 2.2.11 Cycle 10
+# 2.2.12 Cycle 11
 
 ## Design
 
 ### Objectives
 
-* [x] Make a world with multiple screens
-* [x] Make a camera that will switch between the screens based off of the player's location
+* [x] Make walls and the ability to slide down them
+* [x] Add an ability to hold onto the wall
+* [x] Make a wall jumping system
 
 ### Usability Features
 
-* Simplified controls - no complications yet, just very basic movement. Easy to understand, should be easy to implement.
-* Visual Clarity - There are no filters, and all screens switch the same way and are the same size
+* Visual Clarity - There is a clear distinction between different terrains (ground and wall), and the player is easy to see on screen.
+* Simplified controls - the controls are consistent between forms: jumping on the ground and walls are the same.
 
 ### Key Variables
 
-| Variable Name | Use                                     |
-| ------------- | --------------------------------------- |
-| camera        | the variable used to control the camera |
-| player.x      | the player's x position                 |
-| cameraX       | the camera's x position                 |
-| leftScreen    | leftmost point of the screen            |
-| rightScreen   | rightmost point of the screen           |
+| Variable Name  | Use                                                                           |
+| -------------- | ----------------------------------------------------------------------------- |
+| touchingWall   | touching a wall or not                                                        |
+| left/rightWall | if the player is touching a wall, it checks to see which side the wall is on. |
+| wallJump       | a check for if a wall jump is charged                                         |
+| wallSlide      | a check that enables/disables wallJump and slows falls on walls.              |
 
 ### Pseudocode
 
 To keeps things clean, I'll only include relevant changes in pseudocode
 
 ```
-camera.size = window width, window height
-camera.position = x, y
+if player touches wall
+    touchingWall = true
+    if playerLeft touches wall
+        leftWall = true
+    end if
+    if playerRight touches wall
+        rightWall = true
+    end if
+end if
 
-if player.x > cameraX + window width
-    cameraX += window width
-    camera.position = x, y
+if touchingWall = true & wallSlide = false
+    resVerticalForce = resVerticalForce * 10
+    wallSlide = true
+else
+    resVerticalForce = resVerticalForce / 10
+    wallSlide = false
 end if
-if player.x < cameraX
-    cameraX += -window width
+
+if movementKeys.jump.isDown & wallSlide
+    wallJump = true
 end if
+
+if movementKeys.jump.isUp & wallJump
+    if leftWall
+        drivingVerticalForce = up
+        drivingHorizontalForce = right
+    else
+        drivingVerticalForce = up
+        drivingHorizontalForce = left
+    end if
+end if 
 ```
 
 ## Development
 
 ### Outcome
 
-This camera control works for any size of world and will be replicated vertically. This means adding levels will be easy as long as parts of the world can be determined with coordinates. It functions by determining the left and rightmost parts of a screen, then if they player exceeds either of the points it will move the camera 1 screen width in the correct direction, and redefine the location of the left and rightmost points. This works similarly horizontally, but with top and bottom rather than left and right.
+
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -92,7 +113,7 @@ var server = app.listen(8081, function () {
                 mode: Phaser.Scale.FIT,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
                 width: 1024,
-                height: 600
+                height: 512
             },
 
             physics: {
@@ -115,6 +136,12 @@ var server = app.listen(8081, function () {
         var platforms;
         var movementKeys;
 
+        //collision checks
+        var isGrounded = false;
+        var leftWall = false;
+        var rightWall = false;
+        var touchingWall = false;
+
         //values for acceleration
         var finalHorizontalVel = 0;
         var playerMass = 2;
@@ -129,10 +156,14 @@ var server = app.listen(8081, function () {
         var resVerticalForce = 0;
         var hasJumped = false;
         var isJumping = false;
+
         var canJump = false;
 
-        var isGrounded = false;
         var canRun = false;
+
+        var wallSlide = false;
+        var gravityDragMultiplier = 0.0001;
+        var wallJump = false;
 
         //special movement
         var canSlide = false;
@@ -153,11 +184,14 @@ var server = app.listen(8081, function () {
         var turningDeceleration = 10;
 
         var maxGravity = 10;
-        var gravityAcceleration = 1;
+        var gravityAcceleration = 2;
         var jumpForce = 70;
 
         var maxSlideForce = 450;
         var slideAcceleration = 30;
+
+        var wallJumpVert = 10;
+        var wallJumpHoriz = 50;
 
         //camera controls
         var leftScreen = 0;
@@ -170,6 +204,7 @@ var server = app.listen(8081, function () {
             this.load.image('background', '/background.png');
             this.load.image('ground', '/ground.png');
             this.load.image('player', '/player.png');
+            this.load.image('wall', '/wall.png');
         }
 
         function create() {
@@ -186,26 +221,49 @@ var server = app.listen(8081, function () {
 
             //The things we stand on
             ground = this.physics.add.staticGroup();
+            wall = this.physics.add.staticGroup();
+            //---------------- secret scene ----------------
+            wall.create(-1008, 448, 'wall').setScale(2).refreshBody();
+            wall.create(-1008, 384, 'wall').setScale(2).refreshBody();
+
+            ground.create(-896, 496, 'ground').setScale(2).refreshBody();
+            ground.create(-640, 496, 'ground').setScale(2).refreshBody();
+            ground.create(-384, 496, 'ground').setScale(2).refreshBody();
+            ground.create(-128, 496, 'ground').setScale(2).refreshBody();
+            //---------------- secret scene ----------------
 
             //---------------- first scene ----------------
-            ground.create(128, 584, 'ground').setScale(2).refreshBody();
-            ground.create(384, 584, 'ground').setScale(2).refreshBody();
-            ground.create(640, 584, 'ground').setScale(2).refreshBody();
-            ground.create(896, 584, 'ground').setScale(2).refreshBody();
+            ground.create(128, 496, 'ground').setScale(2).refreshBody();
+            ground.create(384, 496, 'ground').setScale(2).refreshBody();
+            ground.create(640, 496, 'ground').setScale(2).refreshBody();
+            ground.create(896, 496, 'ground').setScale(2).refreshBody();
             //---------------- first scene ----------------
 
             //---------------- second scene ----------------
-            ground.create(1152, 584, 'ground').setScale(2).refreshBody();
-            ground.create(1408, 584, 'ground').setScale(2).refreshBody();
-            ground.create(1664, 584, 'ground').setScale(2).refreshBody();
-            ground.create(1920, 584, 'ground').setScale(2).refreshBody();
+            ground.create(1152, 496, 'ground').setScale(2).refreshBody();
+            ground.create(1408, 496, 'ground').setScale(2).refreshBody();
+
+            ground.create(1664, 496, 'ground').setScale(2).refreshBody();
+            ground.create(1536, 496, 'ground').setScale(2).refreshBody(); //this is here to prevent a physics bug where the player falls through the floor between gaps in the ground
+            ground.create(1664, 464, 'ground').setScale(2).refreshBody(); //up a floor
+
+            ground.create(1920, 496, 'ground').setScale(2).refreshBody();
+            ground.create(1792, 464, 'ground').setScale(2).refreshBody(); //this is here to prevent a physics bug where the player falls through the floor between gaps in the ground
+            ground.create(1920, 432, 'ground').setScale(2).refreshBody(); //up another
             //---------------- second scene ----------------
 
             //---------------- third scene ----------------
-            ground.create(2176, 584, 'ground').setScale(2).refreshBody();
-            ground.create(2432, 584, 'ground').setScale(2).refreshBody();
-            ground.create(2688, 584, 'ground').setScale(2).refreshBody();
-            ground.create(2944, 584, 'ground').setScale(2).refreshBody();
+            ground.create(2176, 496, 'ground').setScale(2).refreshBody(); //stay on the upper floor
+            ground.create(2176, 432, 'ground').setScale(2).refreshBody();
+
+            ground.create(2432, 496, 'ground').setScale(2).refreshBody();
+            ground.create(2432, 432, 'ground').setScale(2).refreshBody();
+
+            ground.create(2688, 496, 'ground').setScale(2).refreshBody();
+            ground.create(2688, 432, 'ground').setScale(2).refreshBody();
+
+            ground.create(2944, 496, 'ground').setScale(2).refreshBody();
+            ground.create(2944, 432, 'ground').setScale(2).refreshBody();
             //---------------- third scene ----------------
 
             //Player settings
@@ -214,7 +272,8 @@ var server = app.listen(8081, function () {
 
             //Player will obey the laws of physics, and not phase through solid ground
             
-            this.physics.add.collider(player, ground)
+            this.physics.add.collider(player, ground);
+            this.physics.add.collider(player, wall);
 
             movementKeys = this.input.keyboard.addKeys({
                 left: 'left',
@@ -239,6 +298,7 @@ var server = app.listen(8081, function () {
                 camera.scrollX = leftScreen;
             }
 
+            //makes checks for the player touching what can be considered ground
             if (player.body.touching.down) {
                 isGrounded = true;
             }
@@ -246,13 +306,32 @@ var server = app.listen(8081, function () {
                 isGrounded = false;
             }
 
+            //this will check for any surface the player touches with their sides, and consider it a wall
+            if (player.body.touching.left || player.body.touching.right) {
+                touchingWall = true;
+                if (player.body.touching.left) {
+                    leftWall = true;
+                }
+                if (player.body.touching.right) {
+                    rightWall = true;
+                }
+            }
+            if (!player.body.touching.left && !player.body.touching.right) {
+                touchingWall = false;
+                leftWall = false;
+                rightWall = false;
+            }
+
             //debug text for testing
             text.setText([
-                'player x: ' + player.x,
-                'camera width: ' + camera.width,
-                'leftmost point: ' + leftScreen,
-                'rightmost point: ' + rightScreen
-
+                'player vel: ' + finalHorizontalVel,
+                'leftWall: ' + leftWall,
+                'rightWall: ' + rightWall,
+                'touchingWall: ' + touchingWall,
+                'canSlide: ' + canSlide,
+                'canRun: ' + canRun,
+                'hasSlid: ' + hasSlid,
+                'sliding: ' + sliding
             ]);
 
             if (isGrounded) {
@@ -270,8 +349,8 @@ var server = app.listen(8081, function () {
                         canSlide = false;
                     }
                 }
-                
-                if (!canJump && movementKeys.jump.isUp) {
+
+                if (!canJump && movementKeys.jump.isUp && !sliding) {
                     canJump = true;
                     hasJumped = false;
                 }
@@ -295,7 +374,7 @@ var server = app.listen(8081, function () {
             }
 
             //horizontal movement starts here...
-            if (canRun && movementKeys.left.isDown) {
+            if (canRun && movementKeys.left.isDown && !leftWall) {
                 if (drivingHorizontalForce >= turningThreshold && !turningLeft) {
                     /*this checks for weather or not the player can perform a turn boost. 90 allows for input imperfections as it is one frame
                      worth of deceleration below the top speed making it easier to perform*/
@@ -315,7 +394,7 @@ var server = app.listen(8081, function () {
                     drivingHorizontalForce += turningDeceleration; //this checks if the player is travelling above the maximum base speed and decelerates them accordingly
                 }
             }   //tax evasion enabler
-            else if (canRun && movementKeys.right.isDown) {
+            else if (canRun && movementKeys.right.isDown && !rightWall) {
                 if (drivingHorizontalForce <= -turningThreshold && !turningRight) {
                     turningRight = true;
                 }
@@ -339,6 +418,15 @@ var server = app.listen(8081, function () {
             //... and ends here
 
             //vertical movement starts here...
+            if (touchingWall) {
+                gravityDragMultiplier = 0.1;
+                wallSlide = true;
+            }
+            if (!touchingWall) {
+                gravityDragMultiplier = 0.0001;
+                wallSlide = false;
+            }
+
             if (!isGrounded && drivingVerticalForce != maxGravity && !isJumping) {
                 drivingVerticalForce += gravityAcceleration; //this is now the weight force, so gravity is back. no more flight.
             }
@@ -361,12 +449,26 @@ var server = app.listen(8081, function () {
                     isJumping = false;
                     hasJumped = true;
             }
+
+            if (wallJump && movementKeys.jump.isUp) {
+                if (leftWall) {
+                    touchingWall = false;
+                    drivingHorizontalForce = wallJumpHoriz;
+                    drivingVerticalForce = -wallJumpVert;
+                }
+                if (rightWall) {
+                    touchingWall = false;
+                    drivingHorizontalForce = -wallJumpHoriz;
+                    drivingVerticalForce = -allJumpVert;
+                }
+                wallJump = false;
+            }
             //... and ends here
 
             //special movement starts here...
             if (movementKeys.down.isDown && canSlide) {
                 sliding = true;
-                canSlide = false;
+                canSlide = false; //starts the slide if the player is able to
             }
             if (drivingHorizontalForce < 0 && sliding && drivingHorizontalForce > -maxSlideForce) {
                 drivingHorizontalForce += -slideAcceleration;
@@ -384,6 +486,7 @@ var server = app.listen(8081, function () {
             }
             //... and ends here
 
+            //this sections controls horizontal forces and the amount applied. You decelerate faster when sliding than runnig, and instantly if you hit a wall.
             if (isGrounded && movementKeys.right.isUp && movementKeys.left.isUp || isGrounded && hasSlid) {
                 if (!hasSlid && drivingHorizontalForce != 0) {
                     if (drivingHorizontalForce < 0) {
@@ -408,18 +511,42 @@ var server = app.listen(8081, function () {
                     drivingHorizontalForce = 0;
                 }
             }
+
+            //wall checks
+            if (touchingWall && !isGrounded) {
+                drivingHorizontalForce = 0;
+                if (leftWall) {
+                    finalHorizontalVel = -2;
+                }
+                if (rightWall) {
+                    finalHorizontalVel = 2;
+                }
+            }
             
 
-            //Ben Cook has no comments
+            //Ben Cook has no comments to make on this program
             resHorizontalForce = 0.65 * ((finalHorizontalVel) / 2); //resistance here is reliant on the velocity. Velocity is self limiting.
             finalHorizontalVel = parseInt(finalHorizontalVel + ((drivingHorizontalForce - resHorizontalForce) / playerMass));
             /*calculates horizontal velocity based off of the 'forces' applied. Doing it this way means dashes and extra movement boosts
              can be implemented by saying they apply a larger force*/
             player.setVelocityX(finalHorizontalVel); //move the player
 
-            resVerticalForce = 0.0001 * ((finalVerticalVel ^ 2) / 2);
-            finalVerticalVel = parseInt(finalVerticalVel + (drivingVerticalForce - resVerticalForce));
-            player.setVelocityY(finalVerticalVel);
+            if (wallSlide) {
+                if (movementKeys.jump.isDown) {
+                    player.setVelocityY(0);
+                    wallJump = true;
+                }
+                if (movementKeys.jump.isUp) {
+                    resVerticalForce = gravityDragMultiplier * ((finalVerticalVel ^ 2) / 2);
+                    finalVerticalVel = parseInt(finalVerticalVel + (drivingVerticalForce - resVerticalForce));
+                    player.setVelocityY(finalVerticalVel);
+                }
+            }
+            if (!wallSlide) {
+                resVerticalForce = gravityDragMultiplier * ((finalVerticalVel ^ 2) / 2);
+                finalVerticalVel = parseInt(finalVerticalVel + (drivingVerticalForce - resVerticalForce));
+                player.setVelocityY(finalVerticalVel);
+            }
             //louie is in pain from if statement overload. perfect.
         }
     </script>
@@ -432,19 +559,16 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The main challenge present in this cycle was understanding how the camera controls worked. Phaser had a value for camera position, which determined the physical position of the camera in the window rather than what the camera was looking at. Once the way the move the camera was discovered, the problem lay in defining the screen edges. Initially, there was a problem with the player being considered both greater than and less than the value to change screens, causing the game to freeze. This was fixed by changing the screen to have left and right points for the camera to check.
+The greatest challenge here was getting the player to stick to the wall and then be removed at the correct time. The way phaser handles collisions makes the player and wall push apart slightly, so I have to remove all forces being applied to the player while they're in contact with the wall and still apply movement in the direction of the wall to make the player stick till I want them removed.
 
 ## Testing
 
 ### Tests
 
-| Test | Instructions                                  | What I expect                                                                                                                                                                                                                                | What actually happens | Pass/Fail |
-| ---- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | --------- |
-| 1    | Run the code                                  | A white rectangle will fall onto a platform, with the camera positions being 0 for left and 1024 for right                                                                                                                                   | As expected           | Pass      |
-| 2    | Move to the left past the edge of the screen  | <p>The camera should remain still till the player crosses the leftmost point when the screen should change and the player should appear from the right.<br>Leftmost and rightmost point should read as -1024 from their previous values.</p> | As expected           | Pass      |
-| 3    | Move to the right past the edge of the screen | <p>The camera should remain still till the player crosses the rightmost point when the screen should change and the player should appear from the left.<br>Leftmost and rightmost point should read as +1024 from their previous point.</p>  | As expected           | Pass      |
-| 4    | Move from a new screen to a previous screen.  | The screen should change back to the exact point it was before the change. Leftmost and rightmost point should change by +/-1024 appropriately.                                                                                              | As expected           | Pass      |
-| 5    | Move very quickly in either direction         | Player x should never exceed the leftmost point negatively or the rightmost point positively                                                                                                                                                 | As expected           | Pass      |
+| Test | Instructions                                        | What I expect                                                | What actually happens | Pass/Fail |
+| ---- | --------------------------------------------------- | ------------------------------------------------------------ | --------------------- | --------- |
+| 1    | Run the code                                        | Player should be created, fall onto a platform               | As expected           | Pass      |
+| 2    | Jump towards a wall and release jump before hitting | Player should fall down next to wall, but slower than in air | As expected           | Pass      |
 
 ### Evidence
 
