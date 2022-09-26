@@ -131,6 +131,10 @@ var server = app.listen(8081, function () {
         };
 
         //VAR GANG
+        //health stuff
+        var playerHealth = 10;
+        var playerDead = false;
+
         //variables are here
         var player;
         var platforms;
@@ -190,13 +194,16 @@ var server = app.listen(8081, function () {
         var maxSlideForce = 450;
         var slideAcceleration = 30;
 
-        var wallJumpVert = 10;
+        var wallJumpVert = 25;
         var wallJumpHoriz = 50;
 
         //camera controls
         var leftScreen = 0;
         var rightScreen = 1024;
         var screenWidth = 1024;
+        var topScreen = 0;
+        var botScreen = 512;
+        var screenHeight = 512;
 
         var game = new Phaser.Game(config);
 
@@ -205,13 +212,74 @@ var server = app.listen(8081, function () {
             this.load.image('ground', '/ground.png');
             this.load.image('player', '/player.png');
             this.load.image('wall', '/wall.png');
+            this.load.spritesheet('healthBar', '/healthBar.png', { frameWidth: 34, frameHeight: 130 });
         }
 
         function create() {
 
             var camera = this.cameras.main;
 
-            text = this.add.text(10, 10, '', { font: '16px Courier', fill: '#00ff00' }).setScrollFactor(0);
+            text = this.add.text(80, 10, '', { font: '16px Courier', fill: '#00ff00' }).setScrollFactor(0);
+            health = this.add.sprite(30, 80, 'healthBar').setScrollFactor(0);
+
+            //healthbar
+            this.anims.create({
+                key: '10HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [0] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '9HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [1] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '8HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [2] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '7HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [3] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '6HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [4] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '5HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [5] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '4HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [6] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '3HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [7] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '2HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [8] }),
+                frameRate: -1,
+            });
+            this.anims.create({
+                key: '1HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [9, 9, 10, 11, 12, 13, 13, 13, 13, 12, 11, 11, 10, 10, 9, 9] }),
+                frameRate: 14,
+                repeat: -1,
+            });
+            this.anims.create({
+                key: '0HP',
+                frames: this.anims.generateFrameNumbers('healthBar', { frames: [14, 15, 16, 17, 17, 16, 15, 14, 15, 16, 17, 18, 18, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27] }),
+                frameRate: 24,
+                paused: true
+            });
 
             //camera
             camera.setZoom(1);
@@ -222,7 +290,7 @@ var server = app.listen(8081, function () {
             //The things we stand on
             ground = this.physics.add.staticGroup();
             wall = this.physics.add.staticGroup();
-            //---------------- secret scene ----------------
+            //---------------- r1 g ----------------
             wall.create(-1008, 448, 'wall').setScale(2).refreshBody();
             wall.create(-1008, 384, 'wall').setScale(2).refreshBody();
 
@@ -230,16 +298,16 @@ var server = app.listen(8081, function () {
             ground.create(-640, 496, 'ground').setScale(2).refreshBody();
             ground.create(-384, 496, 'ground').setScale(2).refreshBody();
             ground.create(-128, 496, 'ground').setScale(2).refreshBody();
-            //---------------- secret scene ----------------
+            //---------------- r1 g ----------------
 
-            //---------------- first scene ----------------
+            //---------------- c g ----------------
             ground.create(128, 496, 'ground').setScale(2).refreshBody();
             ground.create(384, 496, 'ground').setScale(2).refreshBody();
             ground.create(640, 496, 'ground').setScale(2).refreshBody();
             ground.create(896, 496, 'ground').setScale(2).refreshBody();
-            //---------------- first scene ----------------
+            //---------------- c g ----------------
 
-            //---------------- second scene ----------------
+            //---------------- l1 g ----------------
             ground.create(1152, 496, 'ground').setScale(2).refreshBody();
             ground.create(1408, 496, 'ground').setScale(2).refreshBody();
 
@@ -250,9 +318,9 @@ var server = app.listen(8081, function () {
             ground.create(1920, 496, 'ground').setScale(2).refreshBody();
             ground.create(1792, 464, 'ground').setScale(2).refreshBody(); //this is here to prevent a physics bug where the player falls through the floor between gaps in the ground
             ground.create(1920, 432, 'ground').setScale(2).refreshBody(); //up another
-            //---------------- second scene ----------------
+            //---------------- l1 g ----------------
 
-            //---------------- third scene ----------------
+            //---------------- l2 g ----------------
             ground.create(2176, 496, 'ground').setScale(2).refreshBody(); //stay on the upper floor
             ground.create(2176, 432, 'ground').setScale(2).refreshBody();
 
@@ -264,7 +332,7 @@ var server = app.listen(8081, function () {
 
             ground.create(2944, 496, 'ground').setScale(2).refreshBody();
             ground.create(2944, 432, 'ground').setScale(2).refreshBody();
-            //---------------- third scene ----------------
+            //---------------- l2 g ----------------
 
             //Player settings
             player = this.physics.add.image(400, 170, 'player').setScale(0.5);
@@ -279,11 +347,63 @@ var server = app.listen(8081, function () {
                 left: 'left',
                 right: 'right',
                 down: 'down',
-                jump: 'Z'
+                jump: 'Z',
+                healthUp: 'H',
+                healthDown: 'G'
             })
         }
 
         function update() {
+
+            if (movementKeys.healthUp.isDown) { //test to lower and increase health
+                playerHealth += 1;
+            }
+            if (movementKeys.healthDown.isDown) {
+                playerHealth += -1;
+            }
+
+
+            if (playerHealth > 10) {
+                playerHealth = 10;
+            }
+            if (playerHealth <= 0) {
+                playerHealth = 0;
+            }
+
+            if (playerHealth == 10) {
+                health.anims.play('10HP', true);
+            }
+            if (playerHealth == 9) {
+                health.anims.play('9HP', true);
+            }
+            if (playerHealth == 8) {
+                health.anims.play('8HP', true);
+            }
+            if (playerHealth == 7) {
+                health.anims.play('7HP', true);
+            }
+            if (playerHealth == 6) {
+                health.anims.play('6HP', true);
+            }
+            if (playerHealth == 5) {
+                health.anims.play('5HP', true);
+            }
+            if (playerHealth == 4) {
+                health.anims.play('4HP', true);
+            }
+            if (playerHealth == 3) {
+                health.anims.play('3HP', true);
+            }
+            if (playerHealth == 2) {
+                health.anims.play('2HP', true);
+            }
+            if (playerHealth == 1) {
+                health.anims.play('1HP', true);
+            }
+            if (playerHealth <= 0 && !playerDead) {
+                health.anims.play('0HP', true);
+                playerDead = true;
+            }
 
             var camera = this.cameras.main;
 
@@ -297,6 +417,16 @@ var server = app.listen(8081, function () {
                 rightScreen += -screenWidth;
                 camera.scrollX = leftScreen;
             }
+            if (player.y < topScreen) {
+                topScreen += -screenHeight;
+                botScreen += -screenHeight;
+                camera.scrollY = topScreen;
+            }
+            if (player.y > botScreen) {
+                camera.scrollY = botScreen;
+                topScreen += screenHeight;
+                botScreen += screenHeight;
+            }
 
             //makes checks for the player touching what can be considered ground
             if (player.body.touching.down) {
@@ -307,7 +437,7 @@ var server = app.listen(8081, function () {
             }
 
             //this will check for any surface the player touches with their sides, and consider it a wall
-            if (player.body.touching.left || player.body.touching.right) {
+            if (!isGrounded && player.body.touching.left || !isGrounded && player.body.touching.right) {
                 touchingWall = true;
                 if (player.body.touching.left) {
                     leftWall = true;
@@ -316,7 +446,7 @@ var server = app.listen(8081, function () {
                     rightWall = true;
                 }
             }
-            if (!player.body.touching.left && !player.body.touching.right) {
+            if (!player.body.touching.left && !player.body.touching.right || isGrounded) {
                 touchingWall = false;
                 leftWall = false;
                 rightWall = false;
@@ -324,14 +454,13 @@ var server = app.listen(8081, function () {
 
             //debug text for testing
             text.setText([
-                'player vel: ' + finalHorizontalVel,
-                'leftWall: ' + leftWall,
-                'rightWall: ' + rightWall,
+                'player health: ' + playerHealth,
+                'vert vel: ' + finalVerticalVel,
+                'vert force: ' + drivingVerticalForce,
                 'touchingWall: ' + touchingWall,
-                'canSlide: ' + canSlide,
-                'canRun: ' + canRun,
-                'hasSlid: ' + hasSlid,
-                'sliding: ' + sliding
+                'right: ' + rightWall + ' left: ' + leftWall,
+                'player y: ' + player.y,
+                'top: ' + topScreen + ' bot: ' + botScreen
             ]);
 
             if (isGrounded) {
@@ -450,7 +579,18 @@ var server = app.listen(8081, function () {
                     hasJumped = true;
             }
 
+            if (touchingWall && isJumping) {
+                isJumping = false;
+                hasJumped = true;
+                drivingVerticalForce = 0;
+                finalVerticalVel = 0;
+            }
+
             if (wallJump && movementKeys.jump.isUp) {
+                drivingVerticalForce = 0;
+                drivingHorizontalForce = 0;
+                finalHorizontalVel = 0;
+                finalVerticalVel = 0;
                 if (leftWall) {
                     touchingWall = false;
                     drivingHorizontalForce = wallJumpHoriz;
@@ -514,7 +654,12 @@ var server = app.listen(8081, function () {
 
             //wall checks
             if (touchingWall && !isGrounded) {
-                drivingHorizontalForce = 0;
+                if (drivingVerticalForce < 0) {
+                    drivingVerticalForce = 0;
+                }
+                if (finalVerticalVel < 0) {
+                    finalVerticalVel = 0;
+                }
                 if (leftWall) {
                     finalHorizontalVel = -2;
                 }
@@ -533,8 +678,8 @@ var server = app.listen(8081, function () {
 
             if (wallSlide) {
                 if (movementKeys.jump.isDown) {
-                    player.setVelocityY(0);
                     wallJump = true;
+                    player.setVelocityY(0);
                 }
                 if (movementKeys.jump.isUp) {
                     resVerticalForce = gravityDragMultiplier * ((finalVerticalVel ^ 2) / 2);
@@ -565,11 +710,14 @@ The greatest challenge here was getting the player to stick to the wall and then
 
 ### Tests
 
-| Test | Instructions                                        | What I expect                                                | What actually happens | Pass/Fail |
-| ---- | --------------------------------------------------- | ------------------------------------------------------------ | --------------------- | --------- |
-| 1    | Run the code                                        | Player should be created, fall onto a platform               | As expected           | Pass      |
-| 2    | Jump towards a wall and release jump before hitting | Player should fall down next to wall, but slower than in air | As expected           | Pass      |
+| Test | Instructions                                                             | What I expect                                                 | What actually happens | Pass/Fail |
+| ---- | ------------------------------------------------------------------------ | ------------------------------------------------------------- | --------------------- | --------- |
+| 1    | Run the code                                                             | Player should be created, fall onto a platform                | As expected           | Pass      |
+| 2    | Jump towards a wall and release jump before hitting                      | Player should fall down next to wall, but slower than in air  | As expected           | Pass      |
+| 3    | Player should hold jump instead of releasing when jumping towards a wall | Player should not slide                                       | As expected           | Pass      |
+| 4    | Player releases jump from the wall                                       | Plays should jump up and away from the wall                   | As expected           | Pass      |
+| 5    | Jump is tapped after sliding down the wall                               | Player should slide down, then jump up and away from the wall | As expected           | Pass      |
 
 ### Evidence
 
-<figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
