@@ -10,7 +10,7 @@
 
 ### Usability Features
 
-* Visual Clarity - The health bar is colour coded and remains a constant size and position on the screen&#x20;
+* Visual Clarity - The health bar is colour coded and remains a constant size and position on the screen, enemies are easily distinguished from the terrain and player.
 * Simplified controls - the controls are consistent between forms: jumping on the ground and walls are the same.
 
 ### Key Variables
