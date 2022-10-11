@@ -14,35 +14,25 @@
 
 ### Key Variables
 
-| Variable Name | Use |
-| ------------- | --- |
-| wall          |     |
+| Variable Name               | Use                                                                                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| wall/block/spike/saw/ground | Creates a new group as part of the Phase physics simulation. This can be used to add objects to the group with their own positions, sizes, etc. |
 
 ### Pseudocode
 
 To keeps things clean, I'll only include relevant changes in pseudocode
 
 ```
-playerHealth = 10
+object = this.physics.add.staticGroup()
 
-function hit(damage, target)
-    target += -damage
-end function
-
-if player touches spike
-    hit(1, playerHealth)
-end if
-
-if playerHealth <= 0
-    playerDead = true
-end if
+object.create(position, image).otherProperties()
 ```
 
 ## Development
 
 ### Outcome
 
-I was create a health bar using a sprite which changed with the amount of health the player had. Using Phaser's custom overlap and collision detection, I created a function which would do a set amount of damage to a target, with a toggle to enable and disable immunity protection.&#x20;
+Up until this point, they way parts of the game were created were with individual blocks instead of using Phaser's inbuild object scale manager. With this in use, I was able to fix some previous issues where the player would become stuck on the boundary between 2 objects as the object they were on was now a single object instead of multiple. This also reduced the amount of code needed to make each level, reducing clutter overall.&#x20;
 
 {% tabs %}
 {% tab title="server.js" %}
