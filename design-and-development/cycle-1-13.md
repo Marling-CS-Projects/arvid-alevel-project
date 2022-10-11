@@ -4,10 +4,8 @@
 
 ### Objectives
 
-* [x] Add a health bar that changes with health value
-* [x] Add hazards and hostile NPCs that decrease health
-* [x] Add a death state when health is 0
-* [x] make parts of the level/screens
+* [x] Add gameplay
+* [x] Fix previous movements (air movement, walls)
 
 ### Usability Features
 
@@ -16,11 +14,9 @@
 
 ### Key Variables
 
-| Variable Name | Use                                                             |
-| ------------- | --------------------------------------------------------------- |
-| playerHealth  | tracks the value of the player's health                         |
-| playerDead    | sees if the player is dead or not                               |
-| hit           | check for players getting hit, and later player hitting things. |
+| Variable Name | Use |
+| ------------- | --- |
+| wall          |     |
 
 ### Pseudocode
 
