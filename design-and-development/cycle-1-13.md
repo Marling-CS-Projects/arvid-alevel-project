@@ -6,6 +6,7 @@
 
 * [x] Add gameplay
 * [x] Fix previous movements (air movement, walls)
+* [x] Add some extra QoL to assist in player experience
 
 ### Usability Features
 
@@ -17,12 +18,19 @@
 | Variable Name               | Use                                                                                                                                             |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | wall/block/spike/saw/ground | Creates a new group as part of the Phase physics simulation. This can be used to add objects to the group with their own positions, sizes, etc. |
+| tutorialText                | a boolean to check is the player needs controls to be shown or not.                                                                             |
 
 ### Pseudocode
 
 To keeps things clean, I'll only include relevant changes in pseudocode
 
 ```
+if tutorialText = false
+    hide text
+else
+    show text
+endif
+
 object = this.physics.add.staticGroup()
 
 object.create(position, image).otherProperties()
@@ -32,7 +40,7 @@ object.create(position, image).otherProperties()
 
 ### Outcome
 
-Up until this point, they way parts of the game were created were with individual blocks instead of using Phaser's inbuild object scale manager. With this in use, I was able to fix some previous issues where the player would become stuck on the boundary between 2 objects as the object they were on was now a single object instead of multiple. This also reduced the amount of code needed to make each level, reducing clutter overall.&#x20;
+Up until this point, they way parts of the game were created were with individual objects as part of a group. While I still used objects as part of a group, I minimised the amount used by setting a scale for each object. This meant less clutter and better collision detection as there weren't as many locations where objects and hence their colliders overlapped. I also created a tutorial text that could be enabled/disabled so new players could easily learn controls. This was also able to be manually enabled and disabled.
 
 {% tabs %}
 {% tab title="server.js" %}
@@ -62,7 +70,7 @@ var server = app.listen(8081, function () {
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>e</title>
+    <title>mogus</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico?v=1" />
     <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
     <style>
@@ -99,6 +107,10 @@ var server = app.listen(8081, function () {
         };
 
         //VAR GANG
+        var movingSaw;
+        var tutorialText = true;
+        var isBad = false;
+
         //health stuff
         var playerHealth = 10;
         var lastKnownHealth = 10;
@@ -153,6 +165,7 @@ var server = app.listen(8081, function () {
         var maxRunningForce = 100;
         var runningAcceleration = 10;
         var runningDeceleration = 10;
+        var horizontalDragMultiplier = 0.65;
 
         var maxTurningForce = 200;
         var turningThreshold = 90;
@@ -177,6 +190,18 @@ var server = app.listen(8081, function () {
         var botScreen = 512;
         var screenHeight = 512;
 
+        function hit(target, damage, ignoreImmunity) {
+            if (ignoreImmunity) {
+                return target - damage;
+            }
+            else if (iFrames == 0) {
+                return target - damage;
+            }
+            else {
+                return target;
+            }
+        }
+
         var game = new Phaser.Game(config);
 
         function preload() {
@@ -189,21 +214,10 @@ var server = app.listen(8081, function () {
             this.load.image('wallSpike', 'wallSpike.png');
             this.load.image('warning', '/warning.png');
             this.load.image('block', '/block.png');
+            this.load.image('saw', '/saw.png');
         }
 
         function create() {
-
-            function hit(target, damage, ignoreImmunity) {
-                if (ignoreImmunity) {
-                    return target - damage;
-                }
-                else if (iFrames == 0) {
-                    return target - damage;
-                }
-                else {
-                    return target;
-                }
-            }
 
             var camera = this.cameras.main;
 
@@ -263,7 +277,13 @@ var server = app.listen(8081, function () {
             });
             this.anims.create({
                 key: '0HP',
-                frames: this.anims.generateFrameNumbers('healthBar', { frames: [14, 15, 16, 17, 17, 16, 15, 14, 15, 16, 17, 18, 18, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27] }),
+                frames: this.anims.generateFrameNumbers('healthBar', {
+                    frames: [
+                        14, 14, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 27, 27, 27,
+                        15, 15, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 27, 27, 27,
+                        16, 16, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 27,
+                        17, 17, 18, 18, 18, 19, 19, 19, 20, 20, 20, 21, 21, 21, 22, 22, 22, 23, 23, 23, 24, 24, 24, 25, 25, 26, 26, 27]
+                }),
                 frameRate: 24,
                 paused: true
             });
@@ -274,127 +294,126 @@ var server = app.listen(8081, function () {
             //Background
             this.add.image(400, 300, 'background');
 
-            //The things we stand on
+            //The things we stand on and get hit by
             ground = this.physics.add.staticGroup();
             wall = this.physics.add.staticGroup();
             spike = this.physics.add.staticGroup();
             deathZone = this.physics.add.staticGroup();
             warning = this.physics.add.staticGroup();
             block = this.physics.add.staticGroup();
+            saw = this.physics.add.staticGroup();
 
             //---------------- l2 g ----------------
             ground.create(-1152, 496, 'ground').setScale(2).refreshBody();
 
             wall.create(-1264, 400, 'wall').setScale(1).refreshBody();
-            ground.create(-1184, 352, 'ground').setScale(1).refreshBody();
-            ground.create(-1056, 352, 'ground').setScale(1).refreshBody();
+            ground.create(-1136, 352, 'ground').setScale(1.75, 1).refreshBody();
 
-            ground.create(-1088, 288, 'ground').setScale(1).refreshBody();
-            ground.create(-1216, 288, 'ground').setScale(1).refreshBody();
-            ground.create(-1344, 288, 'ground').setScale(1).refreshBody();
-            ground.create(-1472, 288, 'ground').setScale(1).refreshBody();
-            ground.create(-1600, 288, 'ground').setScale(1).refreshBody();
-            ground.create(-1728, 288, 'ground').setScale(1).refreshBody();
-            ground.create(-1856, 288, 'ground').setScale(1).refreshBody();
+            ground.create(-1472, 288, 'ground').setScale(7, 1).refreshBody();
+            
+            wall.create(-2032, 480, 'wall').setScale(1, 8).refreshBody();
+            spike.create(-2012, 492, 'wallSpike').setScale(1).refreshBody().setFlipX(true);
+            spike.create(-2012, 518, 'wallSpike').setScale(1).refreshBody().setFlipX(true);
+            spike.create(-2012, 544, 'wallSpike').setScale(1).refreshBody().setFlipX(true);
 
-            wall.create(-2032, 64, 'wall').setScale(1).refreshBody();
-
-            wall.create(-2032, 192, 'wall').setScale(1).refreshBody();
-
-            wall.create(-2032, 320, 'wall').setScale(1).refreshBody();
-            wall.create(-1904, 336, 'wall').setScale(1).refreshBody();
-
-            wall.create(-2032, 448, 'wall').setScale(1).refreshBody();
-            wall.create(-1904, 464, 'wall').setScale(1).refreshBody();
-
-            wall.create(-2032, 576, 'wall').setScale(1).refreshBody();
-            wall.create(-1904, 592, 'wall').setScale(1).refreshBody();
-
-            wall.create(-2032, 704, 'wall').setScale(1).refreshBody();
-            wall.create(-1904, 720, 'wall').setScale(1).refreshBody();
-
-            wall.create(-2032, 832, 'wall').setScale(1).refreshBody();
-            wall.create(-2032, 960, 'wall').setScale(1).refreshBody();
+            wall.create(-1904, 544, 'wall').setScale(1, 3.75).refreshBody();
+            spike.create(-1924, 716, 'wallSpike').setScale(1).refreshBody();
+            spike.create(-1924, 742, 'wallSpike').setScale(1).refreshBody();
+            spike.create(-1924, 768, 'wallSpike').setScale(1).refreshBody();
             //---------------- l2 g ----------------
 
             //---------------- l2 d1 ----------------
             ground.create(-1920, 1008, 'ground').setScale(2).refreshBody();
 
-            //196 pixel gap here to add a pit of death
-            deathZone.create(-1728, 1055, '').setSize(196, 64);
+            saw.create(-1968, 976, 'saw').setCircle(22).setScale(1.5).setDepth(-1).refreshBody();
 
-            warning.create(-1760, 1008, 'warning').setScale(1).setDepth(-1);
-            warning.create(-1696, 1008, 'warning').setScale(1).setDepth(-1);
-            warning.create(-1632, 1008, 'warning').setScale(1).setDepth(-1);
+            //pit of death
+            deathZone.create(-1696, 1055, '').setSize(192, 64); //this is a zone which if the player enters, they die immediately
+
+            warning.create(-1696, 1008, 'warning').setScale(3, 1).setDepth(-1);
             
+            block.create(-1568, 1008, 'block').setScale(1).refreshBody();
+            spike.create(-1588, 892, 'wallSpike').setScale(1).refreshBody();
+            wall.create(-1568, 616, 'wall').setScale(1, 4.875).refreshBody();
+            spike.create(-1548, 892, 'wallSpike').setScale(1).refreshBody().setFlipX(true);
 
-            block.create(-1576, 1008, 'block').setScale(1).refreshBody();
+            //pit of death 2
+            deathZone.create(-1440, 1055, '').setSize(192, 64);
+
+            warning.create(-1440, 1008, 'warning').setScale(3, 1).setDepth(-1);
+
+            block.create(-1312, 1008, 'block').setScale(1).refreshBody();
+            spike.create(-1332, 892, 'wallSpike').setScale(1).refreshBody();
+            wall.create(-1312, 616, 'wall').setScale(1, 4.875).refreshBody();
+            spike.create(-1292, 892, 'wallSpike').setScale(1).refreshBody().setFlipX(true);
+
+            //pit of death 3
+            deathZone.create(-1184, 1055, '').setSize(192, 64);
+
+            warning.create(-1184, 1008, 'warning').setScale(3, 1).setDepth(-1);
+
+            block.create(-1056, 1008, 'block').setScale(1).refreshBody();
+            spike.create(-1076, 892, 'wallSpike').setScale(1).refreshBody();
+            wall.create(-1056, 728, 'wall').setScale(1, 3.125).refreshBody();
+            spike.create(-1036, 892, 'wallSpike').setScale(1).refreshBody().setFlipX(true);
             //---------------- l2 d1 ----------------
 
             //---------------- l1 g ----------------
             wall.create(-1008, 336, 'wall').setScale(1).refreshBody();
-            wall.create(-880, 272, 'wall').setScale(2).refreshBody();
+            wall.create(-880, 144, 'wall').setScale(2, 4).refreshBody();
 
-            ground.create(-896, 496, 'ground').setScale(2).refreshBody();
-            ground.create(-640, 496, 'ground').setScale(2).refreshBody();
-            ground.create(-384, 496, 'ground').setScale(2).refreshBody();
-            ground.create(-128, 496, 'ground').setScale(2).refreshBody();
+            movingSaw = this.physics.add.image(-360, 465, 'saw').setCircle(22).setScale(2).setDepth(-1).setPushable(false).refreshBody();
+
+            this.tweens.add({
+                targets: movingSaw,
+                x: -664,
+                y: 465,
+                ease: 'Sine.easeInOut',
+                duration: 2000,
+                yoyo: true,
+                repeat: -1
+            });
+
+            wall.create(-512, 192, 'wall').setScale(1, 3).refreshBody();
+
+            ground.create(-512, 496, 'ground').setScale(8, 2).refreshBody();
             //---------------- l1 g ----------------
 
             //---------------- c g ----------------
-            ground.create(128, 496, 'ground').setScale(2).refreshBody();
-            ground.create(384, 496, 'ground').setScale(2).refreshBody();
-            ground.create(640, 496, 'ground').setScale(2).refreshBody();
-            ground.create(896, 496, 'ground').setScale(2).refreshBody();
+            ground.create(512, 496, 'ground').setScale(8, 2).refreshBody();
             //---------------- c g ----------------
 
             //---------------- r1 g ----------------
-            ground.create(1152, 496, 'ground').setScale(2).refreshBody();
-            ground.create(1408, 496, 'ground').setScale(2).refreshBody();
+            ground.create(1536, 496, 'ground').setScale(8, 2).refreshBody();
+            block.create(1280, 432, 'block').setScale(0.5, 1).refreshBody();
+            spike.create(1280, 396, 'spike').setScale(1).refreshBody();
 
-            spike.create(1532, 448, 'wallSpike').setScale(1).refreshBody();
+            ground.create(1792, 448, 'ground').setScale(4, 1).refreshBody(); //up a floor
+            ground.create(1920, 416, 'ground').setScale(2, 1).refreshBody(); //up another
 
-            ground.create(1664, 496, 'ground').setScale(2).refreshBody();
-            ground.create(1536, 496, 'ground').setScale(2).refreshBody(); //this is here to prevent a physics bug where the player falls through the floor between gaps in the ground
-            ground.create(1664, 464, 'ground').setScale(2).refreshBody(); //up a floor
+            spike.create(1532, 448, 'wallSpike').setScale(1).refreshBody(); //spike for the first up
+            saw.create(1664, 435, 'saw').setCircle(22).setScale(1).setDepth(-1).refreshBody();
+            wall.create(1664, 165, 'wall').setScale(1, 3).refreshBody();
 
-            spike.create(1788, 416, 'wallSpike').setScale(1).refreshBody();
-
-            ground.create(1920, 496, 'ground').setScale(2).refreshBody();
-            ground.create(1792, 464, 'ground').setScale(2).refreshBody(); //this is here to prevent a physics bug where the player falls through the floor between gaps in the ground
-            ground.create(1920, 432, 'ground').setScale(2).refreshBody(); //up another
+            spike.create(1788, 416, 'wallSpike').setScale(1).refreshBody(); //spikes for the second up
+            saw.create(1920, 403, 'saw').setCircle(22).setScale(1).setDepth(-1).refreshBody();
+            wall.create(1920, 133, 'wall').setScale(1, 3).refreshBody();
             //---------------- r1 g ----------------
 
             //---------------- r2 g ----------------
-            ground.create(2176, 496, 'ground').setScale(2).refreshBody(); //stay on the upper floor
-            ground.create(2176, 432, 'ground').setScale(2).refreshBody();
-
-            ground.create(2432, 496, 'ground').setScale(2).refreshBody();
-            ground.create(2432, 432, 'ground').setScale(2).refreshBody();
-
-            ground.create(2688, 496, 'ground').setScale(2).refreshBody();
-            ground.create(2688, 432, 'ground').setScale(2).refreshBody();
-
-            ground.create(2944, 496, 'ground').setScale(2).refreshBody();
-            ground.create(2944, 432, 'ground').setScale(2).refreshBody();
+            ground.create(2560, 464, 'ground').setScale(8, 4).refreshBody();
             //---------------- r2 g ----------------
 
             //---------------- r2 d1 ----------------
-            ground.create(2176, 1008, 'ground').setScale(2).refreshBody(); //here, d1 refers to going down 1
-            ground.create(2432, 1008, 'ground').setScale(2).refreshBody();
-            ground.create(2688, 1008, 'ground').setScale(2).refreshBody();
-            ground.create(2944, 1008, 'ground').setScale(2).refreshBody();
+            ground.create(2560, 1008, 'ground').setScale(8, 2).refreshBody(); //here, d1 refers to going down 1
             //---------------- r2 d1 ----------------
 
             //---------------- r3 d1 ----------------
-            ground.create(3200, 1008, 'ground').setScale(2).refreshBody();
-            ground.create(3456, 1008, 'ground').setScale(2).refreshBody();
-            ground.create(3712, 1008, 'ground').setScale(2).refreshBody();
-            ground.create(3968, 1008, 'ground').setScale(2).refreshBody();
+            ground.create(3584, 1008, 'ground').setScale(8, 2).refreshBody();
             //---------------- r3 d1 ----------------
 
             //Player settings
-            player = this.physics.add.image(-200, 170, 'player').setScale(0.5);
+            player = this.physics.add.image(512, 200, 'player').setScale(0.5);
             player.setCollideWorldBounds(false);
 
             //Player will obey the laws of physics, and not phase through solid ground
@@ -406,14 +425,33 @@ var server = app.listen(8081, function () {
                 player, deathZone,
                 function (_player, _deathZone) {
                     playerHealth = hit(playerHealth, 10, true);
-                })
+                });
 
             this.physics.add.collider(
                 player, spike,
                 function (_player, _spike) {
                     playerHealth = hit(playerHealth, 2, false);
-            })
-                
+                    wallSlide = false;
+                });
+
+            this.physics.add.collider(
+                player, saw,
+                function (_player, _saw) {
+                    playerHealth = hit(playerHealth, 1, false);
+                    if (iFrames > 0) {
+                        iFrames += -1;
+                    }
+                });
+
+            this.physics.add.collider(
+                player, movingSaw,
+                function (_player, _movingSaw) {
+                    playerHealth = hit(playerHealth, 1, false);
+                    if (iFrames > 0) {
+                        iFrames += -1;
+                    }
+                    
+                });
 
             this.physics.add.collider(player, block);
 
@@ -421,30 +459,48 @@ var server = app.listen(8081, function () {
                 left: 'left',
                 right: 'right',
                 down: 'down',
-                jump: 'Z'
+                jump: 'Z',
+                help: 'Q'
             })
 
             //death screen. the player is teleported between this text when they die to respawn
             this.add.text(362, -4948, 'YOU DIED', { font: '64px Garamond', fill: '#ffffff' });
             this.add.text(438, -4838, 'Hold Down to respawn', { font: '16px Garamond', fill: '#ffffff' });
-            debug = this.add.text(200, 100, '').setScrollFactor(0);
-
+            controlText = this.add.text(55, 16, '', { font: '12px Sans' }).setScrollFactor(0);
         }
 
         function update() {
 
-            debug.setText([
-                'player health: ' + playerHealth,
-                'iFramers: ' + iFrames,
-                'last health: ' + lastKnownHealth
-            ]);
+            if (movementKeys.help.isDown) {
+                controlText.setText([
+                    '- Release Q: Hide help text',
+                    '- Left/Right Arrows: Accelerate Left/Right',
+                    '- Z: Jump. Tap for short jump, hold for long.',
+                    '     Tap jump while on a wall to jump again',
+                    '- Down: Perform a short dash if running fast enough'
+                ]);
+                isBad = true;
+            }
+            else if (!isBad) {
+                controlText.setText([
+                    '- Hold Q: Show help text'
+                ]);
+            }
+            else {
+                controlText.setText([
+                    ''
+                ]);
+            }
+
+            Phaser.Actions.Rotate(saw.getChildren(), -0.1, 0.0005);
+            movingSaw.rotation += -0.1;
 
             if (iFrames > 0) {
                 iFrames += -1;
             }
 
             if (playerHealth != lastKnownHealth) {
-                iFrames = 30;
+                iFrames = 50;
                 playerHealth = playerHealth;
                 lastKnownHealth = playerHealth;
             }
@@ -493,9 +549,10 @@ var server = app.listen(8081, function () {
 
             var camera = this.cameras.main;
 
-            if (player.x > rightScreen) {
-                camera.scrollX = rightScreen;
-                leftScreen += screenWidth;
+            //this section controls the camera
+            if (player.x > rightScreen) { //if the player's position is past the rightmost point of the screen
+                camera.scrollX = rightScreen; //the camera scrolls to the next screen right
+                leftScreen += screenWidth; //and then updates the screen's boundaries
                 rightScreen += screenWidth;
             }
             if (player.x < leftScreen) {
@@ -586,7 +643,15 @@ var server = app.listen(8081, function () {
 
             if (!playerDead) {
                 //horizontal movement starts here...
-                if (canRun && movementKeys.left.isDown && !leftWall) {
+                if (!isGrounded && !wallJump) {
+                    runningAcceleration = 2;
+                    maxTurningForce = 100;
+                }
+                else if (isGrounded) {
+                    runningAcceleration = 10;
+                    maxTurningForce = 200;
+                }
+                if (movementKeys.left.isDown && !leftWall) {
                     if (drivingHorizontalForce >= turningThreshold && !turningLeft) {
                         /*this checks for weather or not the player can perform a turn boost. 90 allows for input imperfections as it is one frame
                          worth of deceleration below the top speed making it easier to perform*/
@@ -606,7 +671,7 @@ var server = app.listen(8081, function () {
                         drivingHorizontalForce += turningDeceleration; //this checks if the player is travelling above the maximum base speed and decelerates them accordingly
                     }
                 }   //tax evasion enabler
-                else if (canRun && movementKeys.right.isDown && !rightWall) {
+                else if (movementKeys.right.isDown && !rightWall) {
                     if (drivingHorizontalForce <= -turningThreshold && !turningRight) {
                         turningRight = true;
                     }
@@ -632,9 +697,16 @@ var server = app.listen(8081, function () {
                 //vertical movement starts here...
                 if (touchingWall) {
                     gravityDragMultiplier = 0.1;
-                    wallSlide = true;
+                    runningAcceleration = 0;
+                    if (!wallSlide) {
+                        player.setVelocityX(0)
+                        finalHorizontalVel = 0;
+                        drivingHorizontalForce = 0;
+                        wallSlide = true;
+                    }
                 }
                 if (!touchingWall) {
+                    runningAcceleration = runningAcceleration;
                     gravityDragMultiplier = 0.0001;
                     wallSlide = false;
                 }
@@ -764,7 +836,7 @@ var server = app.listen(8081, function () {
 
 
                 //Ben Cook has no comments to make on this program
-                resHorizontalForce = 0.65 * ((finalHorizontalVel) / 2); //resistance here is reliant on the velocity. Velocity is self limiting.
+                resHorizontalForce = horizontalDragMultiplier * ((finalHorizontalVel) / 2); //resistance here is reliant on the velocity. Velocity is self limiting.
                 finalHorizontalVel = parseInt(finalHorizontalVel + ((drivingHorizontalForce - resHorizontalForce) / playerMass));
                 /*calculates horizontal velocity based off of the 'forces' applied. Doing it this way means dashes and extra movement boosts
                  can be implemented by saying they apply a larger force*/
@@ -833,7 +905,7 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-The biggest challenge was sorting out immunity frames so that they would only trigger on certain events, and also assuring they only triggered if they hadn't been triggered recently.&#x20;
+In this&#x20;
 
 ## Testing
 
