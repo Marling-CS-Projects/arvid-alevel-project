@@ -905,21 +905,15 @@ var server = app.listen(8081, function () {
 
 ### Challenges
 
-In this&#x20;
+The greatest challenge in this sections was the implementation of a moving sawblade. The way I had created groups for each object and then created collision functions between each group and the player meant making a saw that moved using a tween (generating an animation between 2 points automatically). As the collision was created for each saw object in the group, trying to tween a particular saw image didn't move the saw collider. The way I chose to fix it was to create a new moving saw group with it's own collider, which was admittedly a quick-fix.
 
 ## Testing
 
 ### Tests
 
-| Test | Instructions                                               | What I expect                                                                                      | What actually happens | Pass/Fail |
-| ---- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------- | --------- |
-| 1    | Run the code                                               | Player should be created, fall onto a platform. Health bar should be full                          | As expected           | Pass      |
-| 2    | move onto some spikes and then move away                   | damage should be dealt, spikes should behave like whatever terrain they're on.                     | As expected           | Pass      |
-| 3    | Move onto spikes and stay                                  | Damage should only be dealt once, and not be dealt again for a delay                               | As expected           | Pass      |
-| 4    | Let health reach 0                                         | Player should be teleported to the death screen                                                    | As expected           | Pass      |
-| 5    | Hold the respawn button on the death screen and release it | Health bar should fill gradually till released, at which point the bar should rapidly drain again  | As expected           | Pass      |
-| 6    | Hold the respawn button, don't release                     | The player should drop down one screen onto the game world again and the health bar should be full | As expected           | Pass      |
-| 7    | Find the death pit, fall into it                           | The player should be moved the the death screen immediately                                        | As expected           | Pass      |
+| Test | Instructions | What I expect                                                                                   | What actually happens | Pass/Fail |
+| ---- | ------------ | ----------------------------------------------------------------------------------------------- | --------------------- | --------- |
+| 1    | Run the code | Player should spawn onto the central screen, tutorial prompt text should be next to the HP bar. | As expected           | Pass      |
 
 ### Evidence
 
