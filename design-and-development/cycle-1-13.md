@@ -18,7 +18,8 @@
 | Variable Name               | Use                                                                                                                                             |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | wall/block/spike/saw/ground | Creates a new group as part of the Phase physics simulation. This can be used to add objects to the group with their own positions, sizes, etc. |
-| tutorialText                | a boolean to check is the player needs controls to be shown or not.                                                                             |
+| controlText                 | A phaser text object that can be set to display a string. This will show controls when a keys is pressed                                        |
+| isBad                       | a boolean which will hide the initial prompt to display text after it is first used                                                             |
 
 ### Pseudocode
 
@@ -911,14 +912,16 @@ The greatest challenge in this sections was the implementation of a moving sawbl
 
 ### Tests
 
-| Test | Instructions | What I expect                                                                                   | What actually happens | Pass/Fail |
-| ---- | ------------ | ----------------------------------------------------------------------------------------------- | --------------------- | --------- |
-| 1    | Run the code | Player should spawn onto the central screen, tutorial prompt text should be next to the HP bar. | As expected           | Pass      |
+| Test | Instructions                                                                          | What I expect                                                                                   | What actually happens | Pass/Fail |
+| ---- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------- | --------- |
+| 1    | Run the code                                                                          | Player should spawn onto the central screen, tutorial prompt text should be next to the HP bar. | As expected           | Pass      |
+| 2    | Press and hold the prompted help key                                                  | The next to the health bar should change to display movement controls                           | As expected           | Pass      |
+| 3    | Release the help key                                                                  | The extra text and initial prompt should disappear                                              | As expected           | Pass      |
+| 4    | Press, hold and the release the help key after the initial prompt no longer displayer | The control text should appear, stay, then disappear when the key is released                   | As expected           | Pass      |
+| 5    | Touch the moving saw                                                                  | The saw should do damage to the player but not impede horizontal movement                       | As expected           | Pass      |
 
 ### Evidence
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
-
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
