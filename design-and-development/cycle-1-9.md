@@ -403,4 +403,4 @@ The only challenge present in this cycle was ensuring that all the different num
 
 ### Evidence
 
-<figure><img src="../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (8) (2).png" alt=""><figcaption></figcaption></figure>
