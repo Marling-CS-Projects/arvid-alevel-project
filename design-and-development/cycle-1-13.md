@@ -922,6 +922,6 @@ The greatest challenge in this sections was the implementation of a moving sawbl
 
 ### Evidence
 
-<figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (9) (3).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (2) (4).png" alt=""><figcaption></figcaption></figure>
