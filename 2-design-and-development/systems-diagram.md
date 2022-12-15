@@ -14,9 +14,8 @@ For my game to be considered effective, players should be able to clearly see wh
 
 #### Aims
 
-* The game clearly differentiates between hazards, terrain, and the player
-* The controls are easy to learn and use
-* In game instructions are clear and easy to use
+* The game clearly shows the level's terrain and hazards
+* The game has some sort of tutorial to show how the combat/movement works
 
 ### Efficiency
 
@@ -24,8 +23,8 @@ Efficiency can be defined as the speed, ease, and accuracy with which a player c
 
 #### Aims
 
-* There are enough controls to feel varied, but not to the point of being overbearing (a good amount)
-* In game instructions are clear and easy to follow
+* A control system that uses as few keys as possible whilst not using inputs that are too complex
+* Easy to navigate menu with a clear design
 
 ### Engaging
 
@@ -33,8 +32,9 @@ The game is engaging for the players. In other words, the game is fun to play. I
 
 #### Aims
 
-* The game is decently challenging whilst remaining fun
-* The movement system is intuitive and feels dynamic when used
+* Have multiple weapons for combat
+* Each part of the level has multiple ways the player could traverse it
+* Movement and combat are intuitive in the ways they interact
 
 ### Error Tolerant
 
@@ -43,8 +43,8 @@ The game should be free of any errors that may affect a user's experience, and b
 #### Aims
 
 * The game doesn't crash
-* The game does not contain any bugs that negatively affect the user's experience
-* The game tolerant to strange interaction that may not have been intended and should allow them to function without crashing/causing any bugs.&#x20;
+* The game does not contain any bugs that damage the user experience
+* The game tolerant to strange interaction that tests may not have accounted for, that the player invented
 
 ### Easy To Learn
 
@@ -52,8 +52,9 @@ The game should have very basic controls and interactions to learn, but allow fo
 
 #### Aims
 
-* The controls must be easy to use and easy to learn
-* The movement system must be understood, meaning the interaction between movement options can be figured out and used with relative ease.
+* Easy to understand control system
+* Clear and easy to interpret interactions between more complicated actions
+* Basic tutorial for the actions and controls
 
 ## Pseudocode for the Game
 
