@@ -44,4 +44,5 @@
 
 ## Code
 
-* [Page 1](code/page-1.md)
+* [server.js](code/server.js.md)
+* [game.html](code/game.html.md)
