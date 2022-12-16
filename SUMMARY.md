@@ -44,5 +44,9 @@
 
 ## Code
 
-* [server.js](code/server.js.md)
+* [server.js](code/page-1.md)
 * [game.html](code/game.html.md)
+
+***
+
+* [References](references.md)
