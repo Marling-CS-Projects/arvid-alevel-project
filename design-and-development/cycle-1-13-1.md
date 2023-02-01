@@ -1,6 +1,48 @@
-# game.html
+# Copy of 2.2.15 Cycle 14 - Level Showcase and final comments
+
+## Design
+
+### Objectives
+
+* [x] Add comments to everything
+* [x] Showcase the level
+
+### Pseudocode
 
 ```
+variable = value //explain why this is needed and what it does
+```
+
+## Development
+
+### Outcome
+
+This cycle didn't aim to achieve anything development-wise. The point of this section was to simply showcase the final design and add more comments to the code for clarity.
+
+{% tabs %}
+{% tab title="server.js" %}
+```javascript
+var express = require('express');
+var app = express();
+
+app.use(express.static('tree'));
+app.use(express.static('assets'));
+
+app.get('/', function (req, res) {
+    res.redirect('/game.html');
+})
+
+var server = app.listen(8081, function () {
+    var host = server.address().address
+    var port = server.address().port
+
+    console.log("Example app listening at http://%s:%s", host, port)
+})
+```
+{% endtab %}
+
+{% tab title="game.html" %}
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -839,3 +881,13 @@
 </body>
 </html>
 ```
+{% endtab %}
+{% endtabs %}
+
+### Challenges
+
+As it turns out, my game is slightly more difficult than I expected and so capturing a recording for the final showcase was slightly more frustrating than I would like to admit.
+
+### Showcase
+
+{% embed url="https://youtu.be/fT7WVrH7BT8" %}
